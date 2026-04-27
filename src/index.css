@@ -1,96 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
+/* Cognitive Curator design system — Editorial Tech, "ink and paper" */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Surfaces — Tonal Architecture */
+    --background: 210 17% 98%;          /* #f8f9fa */
+    --foreground: 200 5% 11%;           /* #191c1d */
+
+    --surface: 210 17% 98%;
+    --surface-low: 210 11% 96%;         /* #f3f4f5 */
+    --surface-container: 210 6% 93%;    /* #edeeef */
+    --surface-high: 210 5% 91%;         /* #e7e8e9 */
+    --surface-highest: 200 5% 89%;      /* #e1e3e4 */
+    --surface-lowest: 0 0% 100%;        /* #ffffff */
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 200 5% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 200 5% 11%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary — Deep Blue */
+    --primary: 240 100% 20%;            /* #000666 */
+    --primary-foreground: 0 0% 100%;
+    --primary-container: 232 66% 30%;   /* #1a237e */
+    --primary-fixed: 240 100% 94%;      /* #e0e0ff */
+    --primary-fixed-dim: 235 100% 87%;  /* #bdc2ff */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary — Vibrant Turquoise */
+    --secondary: 173 100% 21%;          /* #006b5c */
+    --secondary-foreground: 0 0% 100%;
+    --secondary-container: 167 94% 69%; /* #68fadd */
+    --secondary-fixed: 167 94% 69%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Tertiary — Deep Forest */
+    --tertiary: 170 100% 6%;            /* #00201b */
+    --tertiary-foreground: 0 0% 100%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 11% 96%;
+    --muted-foreground: 230 8% 30%;     /* #454652 */
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --accent: 167 94% 69%;
+    --accent-foreground: 240 100% 20%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --destructive: 0 76% 42%;           /* #ba1a1a */
+    --destructive-foreground: 0 0% 100%;
+    --error-container: 6 100% 92%;      /* #ffdad6 */
 
-    --radius: 0.5rem;
+    --border: 240 17% 80%;              /* #c6c5d4 outline-variant */
+    --input: 210 11% 96%;
+    --ring: 173 100% 21%;
 
-    --sidebar-background: 0 0% 98%;
+    --outline: 240 7% 49%;              /* #767683 */
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --radius: 0.75rem;
 
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Signature gradient & shadow */
+    --gradient-primary: linear-gradient(135deg, hsl(240 100% 20%), hsl(232 66% 30%));
+    --shadow-ambient: 0 12px 32px -4px rgba(0, 6, 102, 0.06);
+    --shadow-ambient-lg: 0 20px 48px -8px rgba(0, 6, 102, 0.10);
   }
 }
 
@@ -98,8 +71,31 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-body antialiased;
+  }
+  h1, h2, h3, h4, h5 {
+    @apply font-headline tracking-tight;
+  }
+}
+
+@layer utilities {
+  .gradient-primary { background-image: var(--gradient-primary); }
+  .shadow-ambient { box-shadow: var(--shadow-ambient); }
+  .shadow-ambient-lg { box-shadow: var(--shadow-ambient-lg); }
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
 }
