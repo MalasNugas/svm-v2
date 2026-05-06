@@ -1,6 +1,32 @@
 import { AppShell } from "@/components/AppShell";
 import { useEffect, useState } from "react";
 import { fetchTweets, type TweetRow, type Sentiment } from "@/lib/api";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+
+async function exportPDF(filter: Sentiment | "all", q: string) {
+  const { rows } = await fetchTweets({ page: 1, pageSize: 10000, sentiment: filter, q });
+  const doc = new jsPDF({ orientation: "landscape" });
+  doc.setFontSize(16);
+  doc.text("Sentiment Analysis Results - Flores Tourism", 14, 15);
+  doc.setFontSize(10);
+  doc.text(`Generated: ${new Date().toLocaleString()}  |  Total: ${rows.length}  |  Filter: ${filter}`, 14, 22);
+  autoTable(doc, {
+    startY: 28,
+    head: [["#", "Source", "Text", "Sentiment", "Confidence"]],
+    body: rows.map((r, i) => [
+      i + 1,
+      r.source,
+      r.text.length > 140 ? r.text.slice(0, 140) + "…" : r.text,
+      r.sentiment ?? "unlabeled",
+      r.confidence != null ? (r.confidence * 100).toFixed(1) + "%" : "-",
+    ]),
+    styles: { fontSize: 8, cellPadding: 2 },
+    headStyles: { fillColor: [15, 42, 76] },
+    columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 20 }, 2: { cellWidth: 180 }, 3: { cellWidth: 25 }, 4: { cellWidth: 25 } },
+  });
+  doc.save(`sentiment-results-${Date.now()}.pdf`);
+}
 
 export default function Dataset() {
   const [rows, setRows] = useState<TweetRow[]>([]);
