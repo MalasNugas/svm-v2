@@ -53,6 +53,9 @@ export default function Dataset() {
               Exploring {total.toLocaleString()} sentiment data points scraped from social media regarding the Flores archipelago.
             </p>
           </div>
+          <button onClick={() => exportPDF(filter, q)} className="bg-primary text-primary-foreground rounded-xl px-5 py-3 text-sm font-bold flex items-center gap-2 hover:opacity-90">
+            <span className="material-symbols-outlined text-[18px]">download</span>
+            Download PDF
         </div>
 
         <div className="mt-8 bg-surface-lowest rounded-2xl p-5 grid grid-cols-1 md:grid-cols-4 gap-3 shadow-ambient">
