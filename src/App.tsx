@@ -30,6 +30,7 @@ const App = () => (
           <Route path="/dataset" element={<RequireAuth><Dataset /></RequireAuth>} />
           <Route path="/tourism" element={<Tourism />} />
           <Route path="/about" element={<About />} />
+          <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
