@@ -83,7 +83,7 @@ export default function About() {
 
         <div className="mt-12 pt-8 border-t border-border/30 text-[11px] tracking-[0.18em] uppercase text-muted-foreground">
           <p className="font-bold text-primary">Faculty of Computer Science</p>
-          <p className="mt-1">University of Tourism &amp; Information Technology</p>
+          <p className="mt-1">Institut Teknologi Nasional Malang</p>
         </div>
       </section>
     </AppShell>
