@@ -35,8 +35,6 @@ export default function Tourism() {
       <section className="max-w-[1400px]">
         <div className="flex items-center gap-3 text-secondary text-[11px] tracking-[0.25em] uppercase font-bold">
           <span className="w-8 h-px bg-secondary" /> Thesis Case Study
-        <div className="flex items-center gap-3 text-secondary text-[11px] tracking-[0.25em] uppercase font-bold">
-          <span className="w-8 h-px bg-secondary" /> Thesis Case Study
         </div>
         <h1 className="mt-4 font-headline text-5xl font-extrabold text-primary tracking-tight leading-tight">
           Sentiment Landscape of<br />Flores Tourism
@@ -46,9 +44,12 @@ export default function Tourism() {
         </p>
 
         <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {destinations.map((d) => (
+          {filtered.map((d) => (
             <DestCard key={d.name} d={d} />
           ))}
+          {filtered.length === 0 && (
+            <p className="text-muted-foreground col-span-full">No destinations match "{q}".</p>
+          )}
         </div>
       </section>
     </AppShell>
