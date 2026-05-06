@@ -11,6 +11,7 @@ import Dataset from "./pages/Dataset.tsx";
 import Tourism from "./pages/Tourism.tsx";
 import About from "./pages/About.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import Profile from "./pages/Profile.tsx";
 import { RequireAuth } from "./components/RequireAuth";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/dataset" element={<RequireAuth><Dataset /></RequireAuth>} />
           <Route path="/tourism" element={<Tourism />} />
           <Route path="/about" element={<About />} />
+          <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

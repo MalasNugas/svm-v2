@@ -1,5 +1,12 @@
-import { NavLink, useLocation } from "react-router-dom";
-import { ReactNode } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { ReactNode, useEffect, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { auth } from "@/lib/api";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: "dashboard" },
@@ -13,11 +20,34 @@ interface AppShellProps {
   children: ReactNode;
   searchPlaceholder?: string;
   rightSlot?: ReactNode;
+  searchValue?: string;
+  onSearchChange?: (v: string) => void;
 }
 
-export function AppShell({ children, searchPlaceholder = "Search sentiment data...", rightSlot }: AppShellProps) {
+export function AppShell({ children, searchPlaceholder = "Search sentiment data...", rightSlot, searchValue, onSearchChange }: AppShellProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const showTopNav = ["/dashboard"].includes(location.pathname);
+  const { user } = useAuth();
+  const [displayName, setDisplayName] = useState<string>("");
+  const [notifCount, setNotifCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle()
+      .then(({ data }) => setDisplayName(data?.display_name || user.email?.split("@")[0] || "User"));
+    supabase.from("tweets").select("*", { count: "exact", head: true })
+      .not("labeled_at", "is", null)
+      .gte("labeled_at", new Date(Date.now() - 24 * 3600 * 1000).toISOString())
+      .then(({ count }) => setNotifCount(count ?? 0));
+  }, [user]);
+
+  const initial = (displayName || "U").charAt(0).toUpperCase();
+
+  const handleSignOut = async () => {
+    await auth.signOut();
+    navigate("/login");
+  };
 
   return (
     <div className="min-h-screen bg-surface flex">
@@ -33,7 +63,7 @@ export function AppShell({ children, searchPlaceholder = "Search sentiment data.
           </div>
         </div>
 
-        <button className="w-full py-3 px-4 mb-8 gradient-primary text-primary-foreground rounded-xl font-bold flex items-center justify-center gap-2 shadow-ambient hover:saturate-150 transition-all text-sm">
+        <button onClick={() => navigate("/analysis")} className="w-full py-3 px-4 mb-8 gradient-primary text-primary-foreground rounded-xl font-bold flex items-center justify-center gap-2 shadow-ambient hover:saturate-150 transition-all text-sm">
           <span className="material-symbols-outlined text-[18px]">add</span>
           New Analysis
         </button>
@@ -57,15 +87,15 @@ export function AppShell({ children, searchPlaceholder = "Search sentiment data.
           ))}
         </nav>
 
-        <div className="flex items-center gap-3 pt-6">
+        <button onClick={() => navigate("/profile")} className="flex items-center gap-3 pt-6 hover:opacity-80 text-left">
           <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-secondary font-bold">
-            E
+            {initial}
           </div>
           <div className="leading-tight">
-            <p className="text-sm font-bold text-primary">Dr. Elara Flores</p>
-            <p className="text-xs text-muted-foreground">Lead Researcher</p>
+            <p className="text-sm font-bold text-primary">{displayName || "Guest"}</p>
+            <p className="text-xs text-muted-foreground">Researcher</p>
           </div>
-        </div>
+        </button>
       </aside>
 
       {/* Main */}
@@ -77,6 +107,8 @@ export function AppShell({ children, searchPlaceholder = "Search sentiment data.
               <span className="material-symbols-outlined text-muted-foreground text-[20px]">search</span>
               <input
                 type="text"
+                value={searchValue ?? ""}
+                onChange={(e) => onSearchChange?.(e.target.value)}
                 placeholder={searchPlaceholder}
                 className="flex-1 bg-transparent border-0 outline-none text-sm placeholder:text-muted-foreground"
               />
@@ -91,13 +123,59 @@ export function AppShell({ children, searchPlaceholder = "Search sentiment data.
           )}
           <div className="flex items-center gap-3">
             {rightSlot}
-            <button className="relative w-10 h-10 rounded-full hover:bg-surface-low flex items-center justify-center text-muted-foreground">
-              <span className="material-symbols-outlined text-[22px]">notifications</span>
-              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-destructive" />
-            </button>
-            <button className="w-10 h-10 rounded-full hover:bg-surface-low flex items-center justify-center text-muted-foreground">
-              <span className="material-symbols-outlined text-[22px]">settings</span>
-            </button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="relative w-10 h-10 rounded-full hover:bg-surface-low flex items-center justify-center text-muted-foreground">
+                  <span className="material-symbols-outlined text-[22px]">notifications</span>
+                  {notifCount > 0 && <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-destructive" />}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-72">
+                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {notifCount > 0 ? (
+                  <DropdownMenuItem onClick={() => navigate("/dataset")}>
+                    <div>
+                      <p className="text-sm font-semibold">{notifCount} tweets labeled</p>
+                      <p className="text-xs text-muted-foreground">In the last 24 hours</p>
+                    </div>
+                  </DropdownMenuItem>
+                ) : (
+                  <div className="px-2 py-6 text-center text-sm text-muted-foreground">No new activity</div>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate("/analysis")}>
+                  <span className="material-symbols-outlined text-[18px] mr-2">analytics</span>
+                  Run new analysis
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="w-10 h-10 rounded-full hover:bg-surface-low flex items-center justify-center text-muted-foreground">
+                  <span className="material-symbols-outlined text-[22px]">settings</span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>{displayName || "Account"}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate("/profile")}>
+                  <span className="material-symbols-outlined text-[18px] mr-2">person</span>
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                  <span className="material-symbols-outlined text-[18px] mr-2">dashboard</span>
+                  Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                  <span className="material-symbols-outlined text-[18px] mr-2">logout</span>
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 
