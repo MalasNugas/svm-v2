@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/AppShell";
+import { useState } from "react";
 import komodo from "@/assets/dest-komodo.jpg";
 import kelimutu from "@/assets/dest-kelimutu.jpg";
 import padar from "@/assets/dest-padar.jpg";
