@@ -81,29 +81,6 @@ export default function About() {
           </div>
         </div>
 
-        {/* Researcher */}
-        <div className="mt-8 bg-surface-lowest rounded-2xl p-8 shadow-ambient grid grid-cols-1 md:grid-cols-[200px,1fr] gap-8 items-center">
-          <div className="relative">
-            <div className="w-44 h-44 rounded-2xl overflow-hidden border-4 border-secondary-container">
-              <img src={researcher} alt="Researcher" loading="lazy" className="w-full h-full object-cover" />
-            </div>
-            <div className="absolute -bottom-3 -right-3 w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground shadow-ambient">
-              <span className="material-symbols-outlined">school</span>
-            </div>
-          </div>
-          <div>
-            <p className="text-secondary text-[11px] tracking-[0.2em] uppercase font-bold">About the Researcher</p>
-            <h3 className="font-headline text-3xl font-bold text-primary mt-2">Aditya Wijaya, M.Kom</h3>
-            <p className="mt-3 text-muted-foreground leading-relaxed max-w-2xl">
-              Specializing in Computational Linguistics and Tourism Analytics. This thesis aims to provide the Flores Tourism Bureau with an automated decision-support system to maintain the region's status as a world-class destination.
-            </p>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <button className="px-5 py-2.5 rounded-xl border border-border/40 text-primary font-bold text-sm hover:bg-surface-low">Contact Researcher</button>
-              <button className="px-5 py-2.5 rounded-xl border border-border/40 text-primary font-bold text-sm hover:bg-surface-low">View Publications</button>
-            </div>
-          </div>
-        </div>
-
         <div className="mt-12 pt-8 border-t border-border/30 text-[11px] tracking-[0.18em] uppercase text-muted-foreground">
           <p className="font-bold text-primary">Faculty of Computer Science</p>
           <p className="mt-1">University of Tourism &amp; Information Technology</p>
