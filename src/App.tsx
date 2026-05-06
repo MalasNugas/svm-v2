@@ -11,6 +11,7 @@ import Dataset from "./pages/Dataset.tsx";
 import Tourism from "./pages/Tourism.tsx";
 import About from "./pages/About.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import Profile from "./pages/Profile.tsx";
 import { RequireAuth } from "./components/RequireAuth";
 
 const queryClient = new QueryClient();
