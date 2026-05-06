@@ -26,9 +26,15 @@ const destinations: Dest[] = [
 ];
 
 export default function Tourism() {
+  const [q, setQ] = useState("");
+  const filtered = destinations.filter((d) =>
+    (d.name + " " + d.desc + " " + d.sentiment).toLowerCase().includes(q.toLowerCase())
+  );
   return (
-    <AppShell searchPlaceholder="Search destinations...">
+    <AppShell searchPlaceholder="Search destinations..." searchValue={q} onSearchChange={setQ}>
       <section className="max-w-[1400px]">
+        <div className="flex items-center gap-3 text-secondary text-[11px] tracking-[0.25em] uppercase font-bold">
+          <span className="w-8 h-px bg-secondary" /> Thesis Case Study
         <div className="flex items-center gap-3 text-secondary text-[11px] tracking-[0.25em] uppercase font-bold">
           <span className="w-8 h-px bg-secondary" /> Thesis Case Study
         </div>
