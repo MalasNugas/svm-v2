@@ -2,6 +2,7 @@ import { AppShell } from "@/components/AppShell";
 import featuredImg from "@/assets/featured-narrative.jpg";
 import { useEffect, useState } from "react";
 import { fetchDashboardStats, fetchTopDestinations } from "@/lib/api";
+import { WordCloud } from "@/components/WordCloud";
 
 interface Stats { total: number; positive: number; neutral: number; negative: number; unlabeled: number }
 interface Dest { name: string; score: number; mentions: number }
