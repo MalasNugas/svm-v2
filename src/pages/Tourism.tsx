@@ -206,7 +206,7 @@ export default function Tourism() {
   );
 }
 
-function DestCard({ d }: { d: Dest }) {
+function DestCard({ d, onViewDetails }: { d: Dest; onViewDetails: () => void }) {
   return (
     <div className="bg-surface-lowest rounded-2xl overflow-hidden shadow-ambient hover:shadow-ambient-lg transition-shadow group">
       <div className="relative aspect-[4/3] overflow-hidden">
@@ -230,7 +230,7 @@ function DestCard({ d }: { d: Dest }) {
             <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground">Sentiment</p>
             <p className="text-sm font-bold text-secondary">{d.sentiment}</p>
           </div>
-          <button className="text-sm font-bold text-primary flex items-center gap-1">View Details <span className="material-symbols-outlined text-[18px]">chevron_right</span></button>
+          <button onClick={onViewDetails} className="text-sm font-bold text-primary flex items-center gap-1 hover:opacity-80 transition-opacity">View Details <span className="material-symbols-outlined text-[18px]">chevron_right</span></button>
         </div>
       </div>
     </div>
