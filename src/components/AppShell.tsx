@@ -12,6 +12,7 @@ const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: "dashboard" },
   { to: "/analysis", label: "Analysis", icon: "analytics" },
   { to: "/dataset", label: "Dataset", icon: "database" },
+  { to: "/reports", label: "Reports", icon: "summarize" },
   { to: "/tourism", label: "Tourism", icon: "map" },
   { to: "/about", label: "About", icon: "info" },
 ];
@@ -118,7 +119,7 @@ export function AppShell({ children, searchPlaceholder = "Search sentiment data.
             <nav className="hidden lg:flex items-center gap-7 text-sm font-semibold">
               <a href="/dashboard" className="text-primary">Dashboard</a>
               <a href="/dataset" className="text-muted-foreground hover:text-primary">Datasets</a>
-              <a href="/about" className="text-muted-foreground hover:text-primary">Reports</a>
+              <a href="/reports" className="text-muted-foreground hover:text-primary">Reports</a>
             </nav>
           )}
           <div className="flex items-center gap-3">

@@ -2,6 +2,7 @@ import { AppShell } from "@/components/AppShell";
 import featuredImg from "@/assets/featured-narrative.jpg";
 import { useEffect, useState } from "react";
 import { fetchDashboardStats, fetchTopDestinations } from "@/lib/api";
+import { WordCloud } from "@/components/WordCloud";
 
 interface Stats { total: number; positive: number; neutral: number; negative: number; unlabeled: number }
 interface Dest { name: string; score: number; mentions: number }
@@ -119,6 +120,19 @@ export default function Dashboard() {
             </p>
           </div>
         </div>
+        <div className="mt-8 bg-surface-lowest rounded-2xl p-8 shadow-ambient">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-secondary-container/60 text-secondary flex items-center justify-center">
+              <span className="material-symbols-outlined text-[22px]">cloud</span>
+            </div>
+            <div>
+              <h3 className="font-headline text-2xl font-bold text-primary">Word Cloud</h3>
+              <p className="text-xs text-muted-foreground">Most frequent terms across the tweet dataset</p>
+            </div>
+          </div>
+          <WordCloud />
+        </div>
+
       </section>
     </AppShell>
   );
