@@ -12,6 +12,7 @@ import Tourism from "./pages/Tourism.tsx";
 import About from "./pages/About.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Profile from "./pages/Profile.tsx";
+import Reports from "./pages/Reports.tsx";
 import { RequireAuth } from "./components/RequireAuth";
 
 const queryClient = new QueryClient();
