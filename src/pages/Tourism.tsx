@@ -95,6 +95,7 @@ const destinations: Dest[] = [
 
 export default function Tourism() {
   const [q, setQ] = useState("");
+  const [selected, setSelected] = useState<Dest | null>(null);
   const filtered = destinations.filter((d) =>
     (d.name + " " + d.desc + " " + d.sentiment).toLowerCase().includes(q.toLowerCase())
   );
@@ -113,13 +114,94 @@ export default function Tourism() {
 
         <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((d) => (
-            <DestCard key={d.name} d={d} />
+            <DestCard key={d.name} d={d} onViewDetails={() => setSelected(d)} />
           ))}
           {filtered.length === 0 && (
             <p className="text-muted-foreground col-span-full">No destinations match "{q}".</p>
           )}
         </div>
       </section>
+
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0">
+          {selected && (
+            <>
+              <div className="relative aspect-video overflow-hidden rounded-t-lg">
+                <img
+                  src={selected.img}
+                  alt={selected.name}
+                  className="w-full h-full object-cover"
+                />
+                {selected.badge && (
+                  <span className={`absolute top-4 left-4 px-3 py-1 rounded-full text-[11px] font-bold backdrop-blur ${
+                    selected.badgeTone === "live" ? "bg-secondary/80 text-secondary-foreground" :
+                    selected.badgeTone === "atmos" ? "bg-primary/80 text-primary-foreground" :
+                    "bg-secondary-container/90 text-secondary"
+                  }`}>
+                    {selected.badge}
+                  </span>
+                )}
+              </div>
+              <div className="p-6 space-y-5">
+                <DialogHeader className="text-left space-y-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <DialogTitle className="font-headline text-2xl font-bold text-primary">
+                      {selected.name}
+                    </DialogTitle>
+                    <span className="bg-secondary-container/50 text-secondary text-xs font-bold px-2 py-1 rounded-md shrink-0">
+                      {selected.score}
+                    </span>
+                  </div>
+                  <DialogDescription className="text-sm text-muted-foreground leading-relaxed">
+                    {selected.desc}
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="bg-surface-low rounded-xl p-4">
+                    <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-1">Location</p>
+                    <p className="text-sm font-semibold text-primary">{selected.location}</p>
+                  </div>
+                  <div className="bg-surface-low rounded-xl p-4">
+                    <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-1">Best Time to Visit</p>
+                    <p className="text-sm font-semibold text-primary">{selected.bestTime}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-2">Popular Activities</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selected.activities.map((a) => (
+                      <span key={a} className="px-3 py-1.5 rounded-lg bg-secondary-container/40 text-secondary text-xs font-semibold">
+                        {a}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-2">Key Highlights</p>
+                  <ul className="space-y-2">
+                    {selected.highlights.map((h) => (
+                      <li key={h} className="flex items-center gap-2 text-sm text-primary">
+                        <span className="material-symbols-outlined text-secondary text-[18px]">check_circle</span>
+                        {h}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="pt-2 flex items-center justify-between border-t border-border">
+                  <div>
+                    <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground">Sentiment</p>
+                    <p className="text-sm font-bold text-secondary">{selected.sentiment}</p>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }
