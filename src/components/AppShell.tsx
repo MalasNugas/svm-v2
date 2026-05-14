@@ -12,6 +12,7 @@ const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: "dashboard" },
   { to: "/analysis", label: "Analysis", icon: "analytics" },
   { to: "/dataset", label: "Dataset", icon: "database" },
+  { to: "/reports", label: "Reports", icon: "summarize" },
   { to: "/tourism", label: "Tourism", icon: "map" },
   { to: "/about", label: "About", icon: "info" },
 ];
