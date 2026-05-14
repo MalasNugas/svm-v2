@@ -1,5 +1,12 @@
 import { AppShell } from "@/components/AppShell";
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import komodo from "@/assets/dest-komodo.jpg";
 import kelimutu from "@/assets/dest-kelimutu.jpg";
 import padar from "@/assets/dest-padar.jpg";
@@ -15,14 +22,75 @@ interface Dest {
   badge?: string;
   badgeTone?: "live" | "atmos" | "culture";
   variant?: "card" | "wide";
+  location: string;
+  bestTime: string;
+  activities: string[];
+  highlights: string[];
 }
 
 const destinations: Dest[] = [
-  { name: "Komodo Island", score: 94.2, img: komodo, sentiment: "Highly Positive", desc: "Home to the legendary Komodo dragon. Analysis shows peak positive sentiment regarding wildlife conservation and raw natural aesthetics.", badge: "Live Data", badgeTone: "live" },
-  { name: "Kelimutu Lakes", score: 89.8, img: kelimutu, sentiment: "Ethereal", desc: "Famous for its three-colored changing lakes. Visitors frequently express \"Awe\" and \"Spirituality\" in linguistic sentiment clusters.", badge: "Atmospheric", badgeTone: "atmos" },
-  { name: "Padar Island", score: 97.5, img: padar, sentiment: "Exceptional", desc: "The panoramic heart of Komodo National Park. Sentiment analysis indicates this as the highest-rated photographic destination in the region." },
-  { name: "Wae Rebo Village", score: 91.4, img: waerebo, sentiment: "Cultural Heritage", desc: "Deeply embedded in the Manggarai mountains, Wae Rebo offers a unique \"Cultural Immersion\" sentiment. Our data shows high emotional scores for authenticity and community warmth despite the physical challenge of access.", badge: "Cultural Heritage", badgeTone: "culture", variant: "wide" },
-  { name: "Pink Beach", score: 85.3, img: pinkbeach, sentiment: "Vibrant", desc: "One of the world's few pink sand beaches. Linguistic analysis shows high frequency of \"Surprise\" and \"Joy\" descriptors in visitor feedback." },
+  {
+    name: "Komodo Island",
+    score: 94.2,
+    img: komodo,
+    sentiment: "Highly Positive",
+    desc: "Home to the legendary Komodo dragon. Analysis shows peak positive sentiment regarding wildlife conservation and raw natural aesthetics.",
+    badge: "Live Data",
+    badgeTone: "live",
+    location: "Komodo National Park, East Nusa Tenggara",
+    bestTime: "April – November",
+    activities: ["Wildlife spotting", "Guided trekking", "Snorkeling", "Photography"],
+    highlights: ["Komodo dragons", "Pink Beach proximity", "Loh Liang ranger station", "Sunset viewpoint"],
+  },
+  {
+    name: "Kelimutu Lakes",
+    score: 89.8,
+    img: kelimutu,
+    sentiment: "Ethereal",
+    desc: "Famous for its three-colored changing lakes. Visitors frequently express \"Awe\" and \"Spirituality\" in linguistic sentiment clusters.",
+    badge: "Atmospheric",
+    badgeTone: "atmos",
+    location: "Mount Kelimutu, Ende, Flores",
+    bestTime: "May – September",
+    activities: ["Sunrise trekking", "Cultural pilgrimage", "Photography", "Village visit"],
+    highlights: ["Three-colored crater lakes", "Sunrise panorama", "Local myths & folklore", "Moni village tradition"],
+  },
+  {
+    name: "Padar Island",
+    score: 97.5,
+    img: padar,
+    sentiment: "Exceptional",
+    desc: "The panoramic heart of Komodo National Park. Sentiment analysis indicates this as the highest-rated photographic destination in the region.",
+    location: "Komodo National Park, East Nusa Tenggara",
+    bestTime: "April – December",
+    activities: ["Hiking to viewpoint", "Beach hopping", "Drone photography", "Sunrise trek"],
+    highlights: ["Iconic three-bay viewpoint", "Black, white & pink beaches", "Dramatic savanna hills", "Dolphin spotting"],
+  },
+  {
+    name: "Wae Rebo Village",
+    score: 91.4,
+    img: waerebo,
+    sentiment: "Cultural Heritage",
+    desc: "Deeply embedded in the Manggarai mountains, Wae Rebo offers a unique \"Cultural Immersion\" sentiment. Our data shows high emotional scores for authenticity and community warmth despite the physical challenge of access.",
+    badge: "Cultural Heritage",
+    badgeTone: "culture",
+    variant: "wide",
+    location: "Satar Lenda, Manggarai, Flores",
+    bestTime: "March – October",
+    activities: ["Overnight homestay", "Traditional coffee tasting", "Trekking", "Weaving workshop"],
+    highlights: ["UNESCO-recognized Mbaru Niang houses", "Ancient communal living", "Organic Robusta coffee", "Authentic Manggarai hospitality"],
+  },
+  {
+    name: "Pink Beach",
+    score: 85.3,
+    img: pinkbeach,
+    sentiment: "Vibrant",
+    desc: "One of the world's few pink sand beaches. Linguistic analysis shows high frequency of \"Surprise\" and \"Joy\" descriptors in visitor feedback.",
+    location: "Komodo Island, East Nusa Tenggara",
+    bestTime: "April – November",
+    activities: ["Snorkeling", "Beach relaxation", "Underwater photography", "Kayaking"],
+    highlights: ["Rare pink-hued sand", "Pristine coral gardens", "Turtle sightings", "Crystal-clear turquoise water"],
+  },
 ];
 
 export default function Tourism() {
