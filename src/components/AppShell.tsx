@@ -3,18 +3,19 @@ import { ReactNode, useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { auth } from "@/lib/api";
+import { useRole } from "@/hooks/useRole";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const navItems = [
-  { to: "/dashboard", label: "Dashboard", icon: "dashboard" },
-  { to: "/analysis", label: "Analysis", icon: "analytics" },
-  { to: "/dataset", label: "Dataset", icon: "database" },
-  { to: "/reports", label: "Reports", icon: "summarize" },
-  { to: "/tourism", label: "Tourism", icon: "map" },
-  { to: "/about", label: "About", icon: "info" },
+const allNavItems = [
+  { to: "/dashboard", label: "Dashboard", icon: "dashboard", adminOnly: false },
+  { to: "/analysis", label: "Analysis", icon: "analytics", adminOnly: false },
+  { to: "/dataset", label: "Dataset", icon: "database", adminOnly: true },
+  { to: "/reports", label: "Reports", icon: "summarize", adminOnly: true },
+  { to: "/tourism", label: "Tourism", icon: "map", adminOnly: false },
+  { to: "/about", label: "About", icon: "info", adminOnly: false },
 ];
 
 interface AppShellProps {
