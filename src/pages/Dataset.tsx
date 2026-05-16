@@ -1,6 +1,9 @@
 import { AppShell } from "@/components/AppShell";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { fetchTweets, type TweetRow, type Sentiment } from "@/lib/api";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
