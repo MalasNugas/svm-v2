@@ -225,12 +225,9 @@ function DestCard({ d, onViewDetails }: { d: Dest; onViewDetails: () => void }) 
           <span className="bg-secondary-container/50 text-secondary text-xs font-bold px-2 py-1 rounded-md">{d.score}</span>
         </div>
         <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{d.desc}</p>
-        <div className="mt-6 pt-5 flex items-center justify-between">
-          <div>
-            <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground">Sentiment</p>
-            <p className="text-sm font-bold text-secondary">{d.sentiment}</p>
-          </div>
-          <button onClick={onViewDetails} className="text-sm font-bold text-primary flex items-center gap-1 hover:opacity-80 transition-opacity">View Details <span className="material-symbols-outlined text-[18px]">chevron_right</span></button>
+        <div className="mt-6 pt-5">
+          <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground">Sentiment</p>
+          <p className="text-sm font-bold text-secondary">{d.sentiment}</p>
         </div>
       </div>
     </div>
