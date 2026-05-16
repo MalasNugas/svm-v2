@@ -208,7 +208,7 @@ export default function Tourism() {
 
 function DestCard({ d, onViewDetails }: { d: Dest; onViewDetails: () => void }) {
   return (
-    <div className="bg-surface-lowest rounded-2xl overflow-hidden shadow-ambient hover:shadow-ambient-lg transition-shadow group">
+    <div onClick={onViewDetails} className="bg-surface-lowest rounded-2xl overflow-hidden shadow-ambient hover:shadow-ambient-lg transition-shadow group cursor-pointer">
       <div className="relative aspect-[4/3] overflow-hidden">
         <img src={d.img} alt={d.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         {d.badge && (
