@@ -208,7 +208,7 @@ export default function Tourism() {
 
 function DestCard({ d, onViewDetails }: { d: Dest; onViewDetails: () => void }) {
   return (
-    <div className="bg-surface-lowest rounded-2xl overflow-hidden shadow-ambient hover:shadow-ambient-lg transition-shadow group">
+    <div onClick={onViewDetails} className="bg-surface-lowest rounded-2xl overflow-hidden shadow-ambient hover:shadow-ambient-lg transition-shadow group cursor-pointer">
       <div className="relative aspect-[4/3] overflow-hidden">
         <img src={d.img} alt={d.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         {d.badge && (
@@ -225,12 +225,9 @@ function DestCard({ d, onViewDetails }: { d: Dest; onViewDetails: () => void }) 
           <span className="bg-secondary-container/50 text-secondary text-xs font-bold px-2 py-1 rounded-md">{d.score}</span>
         </div>
         <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{d.desc}</p>
-        <div className="mt-6 pt-5 flex items-center justify-between">
-          <div>
-            <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground">Sentiment</p>
-            <p className="text-sm font-bold text-secondary">{d.sentiment}</p>
-          </div>
-          <button onClick={onViewDetails} className="text-sm font-bold text-primary flex items-center gap-1 hover:opacity-80 transition-opacity">View Details <span className="material-symbols-outlined text-[18px]">chevron_right</span></button>
+        <div className="mt-6 pt-5">
+          <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground">Sentiment</p>
+          <p className="text-sm font-bold text-secondary">{d.sentiment}</p>
         </div>
       </div>
     </div>
