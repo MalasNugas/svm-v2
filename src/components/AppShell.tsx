@@ -31,6 +31,8 @@ export function AppShell({ children, searchPlaceholder = "Search sentiment data.
   const navigate = useNavigate();
   const showTopNav = ["/dashboard"].includes(location.pathname);
   const { user } = useAuth();
+  const { isAdmin } = useRole();
+  const navItems = allNavItems.filter(n => !n.adminOnly || isAdmin);
   const [displayName, setDisplayName] = useState<string>("");
   const [notifCount, setNotifCount] = useState(0);
 
