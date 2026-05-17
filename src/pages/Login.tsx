@@ -30,12 +30,12 @@ export default function Login() {
         const { error } = await auth.signIn(email, password);
         if (error) throw error;
         toast.success("Welcome back");
-        navigate("/dashboard");
+        navigate(await roleHome(), { replace: true });
       } else {
         const { error } = await auth.signUp(email, password, name);
         if (error) throw error;
         toast.success("Account created — please check your email if confirmation is required.");
-        navigate("/dashboard");
+        navigate(await roleHome(), { replace: true });
       }
     } catch (err: any) {
       toast.error(err?.message ?? "Authentication failed");
