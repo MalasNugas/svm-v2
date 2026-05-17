@@ -97,7 +97,7 @@ export function AppShell({ children, searchPlaceholder = "Search sentiment data.
           </div>
           <div className="leading-tight">
             <p className="text-sm font-bold text-primary">{displayName || "Guest"}</p>
-            <p className="text-xs text-muted-foreground">Researcher</p>
+            <p className="text-xs text-muted-foreground capitalize">{isAdmin ? "Admin" : "Researcher"}</p>
           </div>
         </button>
       </aside>
