@@ -3,6 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import heroImg from "@/assets/login-hero.jpg";
 import { auth } from "@/lib/api";
+import { supabase } from "@/integrations/supabase/client";
+
+async function roleHome(): Promise<string> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return "/login";
+  const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+  const roles = (data ?? []).map((r: any) => r.role);
+  return roles.includes("admin") ? "/dashboard" : "/dashboard";
+}
 
 export default function Login() {
   const navigate = useNavigate();
