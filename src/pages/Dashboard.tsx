@@ -118,8 +118,8 @@ export default function Dashboard() {
                         <div key={`h-${l}`} className="text-center font-semibold text-primary py-1">{classLabel(l)}</div>
                       ))}
                       {metrics?.matrix.map((row, i) => (
-                        <>
-                          <div key={`r-${i}`} className="font-semibold text-primary py-2 pr-2 text-right">{classLabel(metrics.labels[i])}</div>
+                        <div key={`row-${i}`} className="contents">
+                          <div className="font-semibold text-primary py-2 pr-2 text-right">{classLabel(metrics.labels[i])}</div>
                           {row.map((v, j) => {
                             const intensity = v / matrixMax;
                             const isDiag = i === j;
@@ -137,7 +137,7 @@ export default function Dashboard() {
                               </div>
                             );
                           })}
-                        </>
+                        </div>
                       ))}
                     </div>
                   </div>
