@@ -88,6 +88,8 @@ export async function fetchModelMetrics(): Promise<ModelMetrics> {
   const accuracy = samples ? correct / samples : 0;
   const macroF1 = perClass.reduce((a, c) => a + c.f1, 0) / (perClass.length || 1);
   return { accuracy, macroF1, samples, perClass, matrix, labels };
+}
+
 
 const KEYWORDS: Record<string, string> = {
   "Labuan Bajo": "labuan bajo",
