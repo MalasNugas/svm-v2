@@ -16,30 +16,33 @@ import Reports from "./pages/Reports.tsx";
 import { RequireAuth } from "./components/RequireAuth";
 import { RequireRole } from "./components/RequireRole";
 import { AuthProvider } from "./hooks/useAuth";
+import { LanguageProvider } from "./lib/i18n";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
-            <Route path="/analysis" element={<RequireAuth><Analysis /></RequireAuth>} />
-            <Route path="/dataset" element={<RequireAuth><RequireRole allow={["admin"]}><Dataset /></RequireRole></RequireAuth>} />
-            <Route path="/tourism" element={<RequireAuth><Tourism /></RequireAuth>} />
-            <Route path="/about" element={<RequireAuth><About /></RequireAuth>} />
-            <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
-            <Route path="/reports" element={<RequireAuth><RequireRole allow={["admin"]}><Reports /></RequireRole></RequireAuth>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <LanguageProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+              <Route path="/analysis" element={<RequireAuth><Analysis /></RequireAuth>} />
+              <Route path="/dataset" element={<RequireAuth><RequireRole allow={["admin"]}><Dataset /></RequireRole></RequireAuth>} />
+              <Route path="/tourism" element={<RequireAuth><Tourism /></RequireAuth>} />
+              <Route path="/about" element={<RequireAuth><About /></RequireAuth>} />
+              <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+              <Route path="/reports" element={<RequireAuth><RequireRole allow={["admin"]}><Reports /></RequireRole></RequireAuth>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </LanguageProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

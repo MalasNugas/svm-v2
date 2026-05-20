@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { auth } from "@/lib/api";
 import { useRole } from "@/hooks/useRole";
+import { useT } from "@/lib/i18n";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -26,12 +27,13 @@ interface AppShellProps {
   onSearchChange?: (v: string) => void;
 }
 
-export function AppShell({ children, searchPlaceholder = "Search sentiment data...", rightSlot, searchValue, onSearchChange }: AppShellProps) {
+export function AppShell({ children, searchPlaceholder, rightSlot, searchValue, onSearchChange }: AppShellProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const showTopNav = ["/dashboard"].includes(location.pathname);
   const { user } = useAuth();
   const { isAdmin, loading: roleLoading } = useRole();
+  const { t, lang, setLang } = useT();
   const navItems = roleLoading ? [] : allNavItems.filter(n => !n.adminOnly || isAdmin);
   const [displayName, setDisplayName] = useState<string>("");
   const [notifCount, setNotifCount] = useState(0);
@@ -69,7 +71,7 @@ export function AppShell({ children, searchPlaceholder = "Search sentiment data.
 
         <button onClick={() => navigate("/analysis")} className="w-full py-3 px-4 mb-8 gradient-primary text-primary-foreground rounded-xl font-bold flex items-center justify-center gap-2 shadow-ambient hover:saturate-150 transition-all text-sm">
           <span className="material-symbols-outlined text-[18px]">add</span>
-          New Analysis
+          {t("New Analysis")}
         </button>
 
         <nav className="space-y-1 flex-1">
@@ -86,7 +88,7 @@ export function AppShell({ children, searchPlaceholder = "Search sentiment data.
               }
             >
               <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
-              {item.label}
+              {t(item.label)}
             </NavLink>
           ))}
         </nav>
@@ -96,8 +98,8 @@ export function AppShell({ children, searchPlaceholder = "Search sentiment data.
             {initial}
           </div>
           <div className="leading-tight">
-            <p className="text-sm font-bold text-primary">{displayName || "Guest"}</p>
-            <p className="text-xs text-muted-foreground capitalize">{isAdmin ? "Admin" : "Researcher"}</p>
+            <p className="text-sm font-bold text-primary">{displayName || t("Guest")}</p>
+            <p className="text-xs text-muted-foreground capitalize">{isAdmin ? t("Admin") : t("Researcher")}</p>
           </div>
         </button>
       </aside>
@@ -113,20 +115,29 @@ export function AppShell({ children, searchPlaceholder = "Search sentiment data.
                 type="text"
                 value={searchValue ?? ""}
                 onChange={(e) => onSearchChange?.(e.target.value)}
-                placeholder={searchPlaceholder}
+                placeholder={searchPlaceholder ?? t("Search sentiment data...")}
                 className="flex-1 bg-transparent border-0 outline-none text-sm placeholder:text-muted-foreground"
               />
             </div>
           </div>
           {showTopNav && (
             <nav className="hidden lg:flex items-center gap-7 text-sm font-semibold">
-              <a href="/dashboard" className="text-primary">Dashboard</a>
-              <a href="/dataset" className="text-muted-foreground hover:text-primary">Datasets</a>
-              <a href="/reports" className="text-muted-foreground hover:text-primary">Reports</a>
+              <a href="/dashboard" className="text-primary">{t("Dashboard")}</a>
+              <a href="/dataset" className="text-muted-foreground hover:text-primary">{t("Datasets")}</a>
+              <a href="/reports" className="text-muted-foreground hover:text-primary">{t("Reports")}</a>
             </nav>
           )}
           <div className="flex items-center gap-3">
             {rightSlot}
+
+            <button
+              onClick={() => setLang(lang === "en" ? "id" : "en")}
+              className="px-3 h-10 rounded-full hover:bg-surface-low text-xs font-bold uppercase tracking-wider text-muted-foreground"
+              title={t("Language")}
+            >
+              {lang === "en" ? "EN" : "ID"}
+            </button>
+
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -136,22 +147,22 @@ export function AppShell({ children, searchPlaceholder = "Search sentiment data.
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-72">
-                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                <DropdownMenuLabel>{t("Notifications")}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {notifCount > 0 ? (
                   <DropdownMenuItem onClick={() => navigate("/dataset")}>
                     <div>
-                      <p className="text-sm font-semibold">{notifCount} tweets labeled</p>
-                      <p className="text-xs text-muted-foreground">In the last 24 hours</p>
+                      <p className="text-sm font-semibold">{notifCount} {t("tweets labeled")}</p>
+                      <p className="text-xs text-muted-foreground">{t("In the last 24 hours")}</p>
                     </div>
                   </DropdownMenuItem>
                 ) : (
-                  <div className="px-2 py-6 text-center text-sm text-muted-foreground">No new activity</div>
+                  <div className="px-2 py-6 text-center text-sm text-muted-foreground">{t("No new activity")}</div>
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate("/analysis")}>
                   <span className="material-symbols-outlined text-[18px] mr-2">analytics</span>
-                  Run new analysis
+                  {t("Run new analysis")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -163,20 +174,20 @@ export function AppShell({ children, searchPlaceholder = "Search sentiment data.
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>{displayName || "Account"}</DropdownMenuLabel>
+                <DropdownMenuLabel>{displayName || t("Account")}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate("/profile")}>
                   <span className="material-symbols-outlined text-[18px] mr-2">person</span>
-                  Profile
+                  {t("Profile")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/dashboard")}>
                   <span className="material-symbols-outlined text-[18px] mr-2">dashboard</span>
-                  Dashboard
+                  {t("Dashboard")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                   <span className="material-symbols-outlined text-[18px] mr-2">logout</span>
-                  Sign out
+                  {t("Sign out")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -188,9 +199,9 @@ export function AppShell({ children, searchPlaceholder = "Search sentiment data.
         <footer className="px-6 md:px-12 py-6 flex flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground">
           <p>© 2026 NTT Tourism Sentiment Thesis</p>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-primary">Methodology</a>
-            <a href="#" className="hover:text-primary">Privacy</a>
-            <a href="#" className="hover:text-primary">API Documentation</a>
+            <a href="#" className="hover:text-primary">{t("Methodology")}</a>
+            <a href="#" className="hover:text-primary">{t("Privacy")}</a>
+            <a href="#" className="hover:text-primary">{t("API Documentation")}</a>
           </div>
         </footer>
       </div>
