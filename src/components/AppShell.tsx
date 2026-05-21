@@ -37,6 +37,8 @@ export function AppShell({ children, searchPlaceholder, rightSlot, searchValue, 
   const navItems = roleLoading ? [] : allNavItems.filter(n => !n.adminOnly || isAdmin);
   const [displayName, setDisplayName] = useState<string>("");
   const [notifCount, setNotifCount] = useState(0);
+  const [globalSearch, setGlobalSearch] = useState("");
+  const isControlled = onSearchChange !== undefined;
 
   useEffect(() => {
     if (!user) return;
@@ -109,16 +111,26 @@ export function AppShell({ children, searchPlaceholder, rightSlot, searchValue, 
         {/* Top bar */}
         <header className="sticky top-0 z-10 bg-surface/80 backdrop-blur-xl px-6 md:px-12 py-5 flex items-center gap-6">
           <div className="flex-1 max-w-2xl">
-            <div className="flex items-center gap-3 bg-surface-low rounded-full px-5 py-3">
-              <span className="material-symbols-outlined text-muted-foreground text-[20px]">search</span>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (isControlled) return;
+                const v = globalSearch.trim();
+                navigate(`/dataset${v ? `?q=${encodeURIComponent(v)}` : ""}`);
+              }}
+              className="flex items-center gap-3 bg-surface-low rounded-full px-5 py-3"
+            >
+              <button type="submit" className="flex items-center text-muted-foreground hover:text-primary" aria-label={t("Search")}>
+                <span className="material-symbols-outlined text-[20px]">search</span>
+              </button>
               <input
                 type="text"
-                value={searchValue ?? ""}
-                onChange={(e) => onSearchChange?.(e.target.value)}
+                value={isControlled ? (searchValue ?? "") : globalSearch}
+                onChange={(e) => isControlled ? onSearchChange?.(e.target.value) : setGlobalSearch(e.target.value)}
                 placeholder={searchPlaceholder ?? t("Search sentiment data...")}
                 className="flex-1 bg-transparent border-0 outline-none text-sm placeholder:text-muted-foreground"
               />
-            </div>
+            </form>
           </div>
           {showTopNav && (
             <nav className="hidden lg:flex items-center gap-7 text-sm font-semibold">

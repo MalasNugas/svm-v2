@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/AppShell";
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { fetchTweets, type TweetRow, type Sentiment } from "@/lib/api";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -32,15 +33,22 @@ async function exportPDF(filter: Sentiment | "all", q: string) {
 }
 
 export default function Dataset() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [rows, setRows] = useState<TweetRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState<Sentiment | "all">("all");
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(searchParams.get("q") ?? "");
   const [importing, setImporting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const pageSize = 20;
   const pages = Math.max(1, Math.ceil(total / pageSize));
+
+  useEffect(() => {
+    const urlQ = searchParams.get("q") ?? "";
+    if (urlQ !== q) { setQ(urlQ); setPage(1); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const loadData = () => {
     fetchTweets({ page, pageSize, sentiment: filter, q }).then(({ rows, total }) => {
