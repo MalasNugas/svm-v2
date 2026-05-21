@@ -197,7 +197,7 @@ export function AppShell({ children, searchPlaceholder, rightSlot, searchValue, 
         <main className="flex-1 px-6 md:px-12 py-8 animate-fade-in">{children}</main>
 
         <footer className="px-6 md:px-12 py-6 flex flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground">
-          <p>© 2026 NTT Tourism Sentiment Thesis</p>
+          <p>{t("© 2026 NTT Tourism Sentiment Thesis")}</p>
           <div className="flex gap-6">
             <a href="#" className="hover:text-primary">{t("Methodology")}</a>
             <a href="#" className="hover:text-primary">{t("Privacy")}</a>

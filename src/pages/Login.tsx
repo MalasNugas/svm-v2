@@ -6,6 +6,7 @@ import { auth } from "@/lib/api";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { getRoleHome, type AppRole } from "@/hooks/useRole";
+import { useT } from "@/lib/i18n";
 
 async function roleHome(userId?: string): Promise<string> {
   if (!userId) return "/login";
@@ -24,6 +25,7 @@ async function roleHome(userId?: string): Promise<string> {
 export default function Login() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const { t } = useT();
   const [showPwd, setShowPwd] = useState(false);
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
@@ -134,7 +136,7 @@ export default function Login() {
         </div>
 
         <div className="mt-10 flex flex-wrap justify-between gap-4 text-[11px] tracking-[0.18em] uppercase text-muted-foreground">
-          <span>© 2024 Flores Tourism Sentiment Thesis</span>
+          <span>{t("© 2026 NTT Tourism Sentiment Thesis")}</span>
         </div>
       </div>
     </div>

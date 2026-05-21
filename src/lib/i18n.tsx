@@ -27,6 +27,7 @@ const dict: Record<string, { en: string; id: string }> = {
   "Methodology": { en: "Methodology", id: "Metodologi" },
   "Privacy": { en: "Privacy", id: "Privasi" },
   "API Documentation": { en: "API Documentation", id: "Dokumentasi API" },
+  "© 2026 NTT Tourism Sentiment Thesis": { en: "© 2026 NTT Tourism Sentiment Thesis", id: "© 2026 NTT Tourism Sentiment Thesis" },
   // Dashboard
   "Sentiment Overview": { en: "Sentiment Overview", id: "Ringkasan Sentimen" },
   "Analyzing tourism emotional trends across the Flores archipelago.": {
