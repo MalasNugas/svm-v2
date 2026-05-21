@@ -118,7 +118,7 @@ export default function Dataset() {
             <input ref={fileRef} type="file" accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
             <button onClick={() => fileRef.current?.click()} disabled={importing} className="bg-secondary text-secondary-foreground rounded-xl px-5 py-3 text-sm font-bold flex items-center gap-2 hover:opacity-90 disabled:opacity-50">
               <span className="material-symbols-outlined text-[18px]">upload_file</span>
-              {importing ? "Importing..." : "Import XLSX"}
+              {importing ? "Importing..." : "Import Excel"}
             </button>
             <button onClick={() => exportPDF(filter, q)} className="bg-primary text-primary-foreground rounded-xl px-5 py-3 text-sm font-bold flex items-center gap-2 hover:opacity-90">
               <span className="material-symbols-outlined text-[18px]">download</span>
