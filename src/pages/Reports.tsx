@@ -116,7 +116,7 @@ export default function Reports() {
         <div className="mt-8 flex flex-wrap gap-3">
           <Button onClick={downloadXLSX} disabled={busy} className="gap-2">
             <span className="material-symbols-outlined text-[18px]">table_view</span>
-            Download XLSX
+            Download Excel
           </Button>
           <Button onClick={downloadPDF} disabled={busy} variant="secondary" className="gap-2">
             <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
