@@ -1,38 +1,59 @@
 ## Tujuan
-Menambahkan kemampuan menghapus beberapa data sekaligus (bulk delete) pada halaman Dataset, khusus untuk pengguna dengan role **admin** (sesuai RLS yang sudah ada).
 
-## Perubahan UI (`src/pages/Dataset.tsx`)
+Menyamakan hasil yang ditampilkan website dengan file `hasil_prediksi_Data_Testing.xlsx` (197 baris, hasil prediksi SVM Anda).
 
-1. **Kolom checkbox** di tabel:
-   - Tambah checkbox pada header (select all di halaman aktif).
-   - Tambah checkbox pada setiap baris data.
-   - State baru: `selectedIds: Set<string>`.
+## Isi file Excel
 
-2. **Action bar** muncul saat ada minimal 1 baris terpilih:
-   - Menampilkan jumlah terpilih, misal "3 data dipilih".
-   - Tombol **Hapus Terpilih** (merah, ikon `delete`).
-   - Tombol **Batal** untuk membersihkan seleksi.
-   - Hanya muncul untuk admin (pakai `useRole`).
+- Kolom: `Teks`, `Label Asli`, `Prediksi SVM`, `Confidence Score`
+- Distribusi Prediksi SVM: **Positif 96, Netral 90, Negatif 11** (total 197)
+- Distribusi Label Asli: Positif 97, Netral 82, Negatif 18
 
-3. **Konfirmasi hapus** pakai `AlertDialog` (sudah ada di `components/ui/alert-dialog.tsx`):
-   - Judul: "Hapus data terpilih?"
-   - Deskripsi: "Anda akan menghapus N data. Tindakan ini tidak bisa dibatalkan."
-   - Aksi: Batal / Hapus.
+## Yang akan dilakukan
 
-## Logika Hapus
+### 1. Reset tabel `tweets`
+Hapus semua baris di tabel `tweets` (DELETE), lalu insert 197 baris dari Excel.
 
-- Gunakan `supabase.from("tweets").delete().in("id", [...selectedIds])`.
-- RLS `Tweets: admins delete` sudah mengizinkan admin → tidak perlu migrasi DB.
-- Setelah sukses: toast sukses, reset `selectedIds`, reload data (`loadData()`), reset ke halaman 1 jika halaman saat ini jadi kosong.
-- Tangani error dengan toast destructive.
+Mapping kolom Excel → kolom DB:
+- `Teks` → `text`
+- `Prediksi SVM` (Positif/Netral/Negatif) → `sentiment` (positive/neutral/negative)
+- `Confidence Score` → `confidence`
+- `source` → `"svm-testing"` (penanda dataset SVM Anda)
+- `labeled_at` → `now()`
+- `created_at` → `now()`
 
-## Detail Teknis
+`Label Asli` tidak disimpan karena tabel `tweets` belum punya kolom ground-truth. Untuk fase ini cukup; nanti bisa ditambahkan jika Anda mau menghitung accuracy nyata vs label asli.
 
-- Import: `Checkbox` dari `@/components/ui/checkbox`, komponen `AlertDialog*`, `useRole`.
-- Tampilkan kolom checkbox hanya untuk admin; researcher tetap melihat tampilan lama.
-- Grid baris diubah dari `grid-cols-12` menjadi `grid-cols-[40px_repeat(12,minmax(0,1fr))]` (atau tambah kolom kecil di depan) saat admin, agar layout tidak rusak.
-- Tidak ada perubahan backend / migrasi / file lain.
+### 2. (Opsional, direkomendasikan) Tambah kolom `actual_label`
+Tambah kolom `actual_label app_role`-like (text enum) ke tabel `tweets` agar `Label Asli` ikut tersimpan. Ini membuat halaman Dashboard bisa memakai confusion matrix **nyata** (Label Asli vs Prediksi SVM), bukan pseudo-prediction.
 
-## Out of Scope
-- Hapus semua data lintas halaman (hanya yang ter-select).
-- Perubahan permission/role.
+→ Apakah perlu? **Ya, saya sertakan** karena tanpa ini Reports/Dashboard masih pakai pseudo confusion matrix dan tidak benar-benar "sama dengan Excel".
+
+Migration:
+```sql
+ALTER TABLE public.tweets ADD COLUMN actual_sentiment text;
+```
+
+### 3. Update `fetchModelMetrics` di `src/lib/api.ts`
+Ganti logika pseudo-prediction (yang memakai confidence < 0.7) dengan perhitungan nyata:
+- Baris = `actual_sentiment` (Label Asli)
+- Kolom = `sentiment` (Prediksi SVM)
+- Accuracy, precision, recall, F1, support dihitung dari matrix nyata
+
+Hasilnya: angka di **Reports** dan **Dashboard** (confusion matrix, akurasi, F1) akan persis sesuai file Excel Anda.
+
+### 4. Halaman lain tidak berubah
+- Dataset: tetap menampilkan tabel `tweets` (sekarang isinya 197 baris SVM)
+- Analysis (single text): tetap pakai Gemini sebagai sandbox — di luar scope request ini
+- Top Destinations: otomatis mengikuti dataset baru
+
+## File yang diubah
+
+- Migration baru: tambah kolom `actual_sentiment` di `tweets`
+- Data: DELETE FROM tweets, lalu INSERT 197 baris
+- `src/lib/api.ts`: rewrite `fetchModelMetrics` agar matrix dihitung dari `actual_sentiment` vs `sentiment`
+
+## Di luar scope
+
+- Mengganti Gemini di halaman Analysis dengan SVM (perlu backend Express Anda)
+- Menambah fitur upload Excel langsung dari UI (sekali jalan saja kali ini, dari sisi agent)
+- Mengubah RLS atau auth

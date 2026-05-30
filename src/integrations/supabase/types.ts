@@ -34,6 +34,7 @@ export type Database = {
       }
       tweets: {
         Row: {
+          actual_sentiment: string | null
           confidence: number | null
           created_at: string
           id: string
@@ -43,6 +44,7 @@ export type Database = {
           text: string
         }
         Insert: {
+          actual_sentiment?: string | null
           confidence?: number | null
           created_at?: string
           id?: string
@@ -52,6 +54,7 @@ export type Database = {
           text: string
         }
         Update: {
+          actual_sentiment?: string | null
           confidence?: number | null
           created_at?: string
           id?: string
