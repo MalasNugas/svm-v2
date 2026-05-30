@@ -206,10 +206,30 @@ export default function Dataset() {
           </div>
         </div>
 
+        {isAdmin && selectedIds.size > 0 && (
+          <div className="mt-6 bg-surface-lowest rounded-2xl shadow-ambient px-6 py-4 flex items-center justify-between">
+            <span className="text-sm font-semibold text-primary">{selectedIds.size} data dipilih</span>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setSelectedIds(new Set())} className="rounded-xl px-4 py-2 text-sm font-bold text-muted-foreground hover:bg-surface-low">
+                Batal
+              </button>
+              <button onClick={() => setConfirmOpen(true)} className="bg-destructive text-destructive-foreground rounded-xl px-4 py-2 text-sm font-bold flex items-center gap-2 hover:opacity-90">
+                <span className="material-symbols-outlined text-[18px]">delete</span>
+                Hapus Terpilih
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="mt-6 bg-surface-lowest rounded-2xl shadow-ambient overflow-hidden">
-          <div className="grid grid-cols-12 gap-4 px-6 py-4 text-[11px] font-bold tracking-[0.18em] uppercase text-muted-foreground">
-            <div className="col-span-2">Source</div>
-            <div className="col-span-7">Text Snippet</div>
+          <div className="grid grid-cols-12 gap-4 px-6 py-4 text-[11px] font-bold tracking-[0.18em] uppercase text-muted-foreground items-center">
+            {isAdmin && (
+              <div className="col-span-1 flex items-center">
+                <Checkbox checked={allOnPageSelected} onCheckedChange={toggleAllOnPage} aria-label="Select all" />
+              </div>
+            )}
+            <div className={isAdmin ? "col-span-2" : "col-span-2"}>Source</div>
+            <div className={isAdmin ? "col-span-6" : "col-span-7"}>Text Snippet</div>
             <div className="col-span-3">Sentiment</div>
           </div>
           {rows.map((r, i) => {
