@@ -236,13 +236,18 @@ export default function Dataset() {
             const tone = r.sentiment === "positive" ? "secondary" : r.sentiment === "negative" ? "destructive" : "outline";
             return (
               <div key={r.id} className={`grid grid-cols-12 gap-4 px-6 py-5 items-center ${i % 2 === 0 ? "bg-surface-low/50" : ""}`}>
+                {isAdmin && (
+                  <div className="col-span-1 flex items-center">
+                    <Checkbox checked={selectedIds.has(r.id)} onCheckedChange={() => toggleRow(r.id)} aria-label="Select row" />
+                  </div>
+                )}
                 <div className="col-span-2 flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-primary-fixed flex items-center justify-center text-primary">
                     <span className="material-symbols-outlined text-[18px]">chat</span>
                   </div>
                   <span className="font-semibold text-primary text-sm capitalize">{r.source}</span>
                 </div>
-                <div className="col-span-7 text-sm text-foreground/80 italic">"{r.text}"</div>
+                <div className={`${isAdmin ? "col-span-6" : "col-span-7"} text-sm text-foreground/80 italic`}>"{r.text}"</div>
                 <div className="col-span-3 flex items-center gap-3">
                   {r.sentiment ? (
                     <>
