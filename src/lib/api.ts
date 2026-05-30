@@ -52,24 +52,18 @@ export interface ModelMetrics {
 export async function fetchModelMetrics(): Promise<ModelMetrics> {
   const { data } = await supabase
     .from("tweets")
-    .select("id,sentiment,confidence")
-    .not("sentiment", "is", null);
-  const rows = (data ?? []) as { id: string; sentiment: Sentiment; confidence: number | null }[];
+    .select("sentiment,actual_sentiment")
+    .not("sentiment", "is", null)
+    .not("actual_sentiment", "is", null);
+  const rows = (data ?? []) as { sentiment: Sentiment; actual_sentiment: Sentiment }[];
   const labels: Sentiment[] = ["positive", "neutral", "negative"];
   const idx = (s: Sentiment) => labels.indexOf(s);
   const matrix: number[][] = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
 
-  // Deterministic pseudo-prediction: high confidence => correct; low => shifted by hash.
-  const hash = (s: string) => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); };
   for (const r of rows) {
-    const actual = r.sentiment;
-    const conf = r.confidence ?? 0.5;
-    let predicted: Sentiment = actual;
-    if (conf < 0.7) {
-      const others = labels.filter(l => l !== actual);
-      predicted = others[hash(r.id) % others.length];
-    }
-    matrix[idx(actual)][idx(predicted)]++;
+    const a = idx(r.actual_sentiment);
+    const p = idx(r.sentiment);
+    if (a >= 0 && p >= 0) matrix[a][p]++;
   }
 
   const samples = rows.length;

@@ -1,0 +1,1 @@
+ALTER TABLE public.tweets ADD COLUMN IF NOT EXISTS actual_sentiment text;
