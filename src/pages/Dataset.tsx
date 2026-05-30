@@ -4,6 +4,18 @@ import { useSearchParams } from "react-router-dom";
 import { fetchTweets, type TweetRow, type Sentiment } from "@/lib/api";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useRole } from "@/hooks/useRole";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -34,12 +46,16 @@ async function exportPDF(filter: Sentiment | "all", q: string) {
 
 export default function Dataset() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { isAdmin } = useRole();
   const [rows, setRows] = useState<TweetRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState<Sentiment | "all">("all");
   const [q, setQ] = useState(searchParams.get("q") ?? "");
   const [importing, setImporting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const pageSize = 20;
   const pages = Math.max(1, Math.ceil(total / pageSize));
@@ -57,6 +73,44 @@ export default function Dataset() {
   };
 
   useEffect(loadData, [page, filter, q]);
+
+  useEffect(() => { setSelectedIds(new Set()); }, [page, filter, q]);
+
+  const allOnPageSelected = rows.length > 0 && rows.every(r => selectedIds.has(r.id));
+  const toggleRow = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+  const toggleAllOnPage = () => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (allOnPageSelected) rows.forEach(r => next.delete(r.id));
+      else rows.forEach(r => next.add(r.id));
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedIds);
+    if (!ids.length) return;
+    setDeleting(true);
+    try {
+      const { error } = await supabase.from("tweets").delete().in("id", ids);
+      if (error) throw error;
+      toast({ title: "Berhasil dihapus", description: `${ids.length} data telah dihapus.` });
+      setSelectedIds(new Set());
+      setConfirmOpen(false);
+      if (rows.length === ids.length && page > 1) setPage(p => p - 1);
+      else loadData();
+    } catch (err: any) {
+      toast({ title: "Gagal menghapus", description: err?.message ?? "Unknown error", variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const normalizeSentiment = (v: any): Sentiment | null => {
     if (v == null) return null;
@@ -152,23 +206,48 @@ export default function Dataset() {
           </div>
         </div>
 
+        {isAdmin && selectedIds.size > 0 && (
+          <div className="mt-6 bg-surface-lowest rounded-2xl shadow-ambient px-6 py-4 flex items-center justify-between">
+            <span className="text-sm font-semibold text-primary">{selectedIds.size} data dipilih</span>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setSelectedIds(new Set())} className="rounded-xl px-4 py-2 text-sm font-bold text-muted-foreground hover:bg-surface-low">
+                Batal
+              </button>
+              <button onClick={() => setConfirmOpen(true)} className="bg-destructive text-destructive-foreground rounded-xl px-4 py-2 text-sm font-bold flex items-center gap-2 hover:opacity-90">
+                <span className="material-symbols-outlined text-[18px]">delete</span>
+                Hapus Terpilih
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="mt-6 bg-surface-lowest rounded-2xl shadow-ambient overflow-hidden">
-          <div className="grid grid-cols-12 gap-4 px-6 py-4 text-[11px] font-bold tracking-[0.18em] uppercase text-muted-foreground">
-            <div className="col-span-2">Source</div>
-            <div className="col-span-7">Text Snippet</div>
+          <div className="grid grid-cols-12 gap-4 px-6 py-4 text-[11px] font-bold tracking-[0.18em] uppercase text-muted-foreground items-center">
+            {isAdmin && (
+              <div className="col-span-1 flex items-center">
+                <Checkbox checked={allOnPageSelected} onCheckedChange={toggleAllOnPage} aria-label="Select all" />
+              </div>
+            )}
+            <div className={isAdmin ? "col-span-2" : "col-span-2"}>Source</div>
+            <div className={isAdmin ? "col-span-6" : "col-span-7"}>Text Snippet</div>
             <div className="col-span-3">Sentiment</div>
           </div>
           {rows.map((r, i) => {
             const tone = r.sentiment === "positive" ? "secondary" : r.sentiment === "negative" ? "destructive" : "outline";
             return (
               <div key={r.id} className={`grid grid-cols-12 gap-4 px-6 py-5 items-center ${i % 2 === 0 ? "bg-surface-low/50" : ""}`}>
+                {isAdmin && (
+                  <div className="col-span-1 flex items-center">
+                    <Checkbox checked={selectedIds.has(r.id)} onCheckedChange={() => toggleRow(r.id)} aria-label="Select row" />
+                  </div>
+                )}
                 <div className="col-span-2 flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-primary-fixed flex items-center justify-center text-primary">
                     <span className="material-symbols-outlined text-[18px]">chat</span>
                   </div>
                   <span className="font-semibold text-primary text-sm capitalize">{r.source}</span>
                 </div>
-                <div className="col-span-7 text-sm text-foreground/80 italic">"{r.text}"</div>
+                <div className={`${isAdmin ? "col-span-6" : "col-span-7"} text-sm text-foreground/80 italic`}>"{r.text}"</div>
                 <div className="col-span-3 flex items-center gap-3">
                   {r.sentiment ? (
                     <>
@@ -201,6 +280,24 @@ export default function Dataset() {
           </div>
         </div>
       </section>
+
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus data terpilih?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Anda akan menghapus {selectedIds.size} data. Tindakan ini tidak bisa dibatalkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleting ? "Menghapus..." : "Hapus"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppShell>
   );
 }
