@@ -74,6 +74,44 @@ export default function Dataset() {
 
   useEffect(loadData, [page, filter, q]);
 
+  useEffect(() => { setSelectedIds(new Set()); }, [page, filter, q]);
+
+  const allOnPageSelected = rows.length > 0 && rows.every(r => selectedIds.has(r.id));
+  const toggleRow = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+  const toggleAllOnPage = () => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (allOnPageSelected) rows.forEach(r => next.delete(r.id));
+      else rows.forEach(r => next.add(r.id));
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedIds);
+    if (!ids.length) return;
+    setDeleting(true);
+    try {
+      const { error } = await supabase.from("tweets").delete().in("id", ids);
+      if (error) throw error;
+      toast({ title: "Berhasil dihapus", description: `${ids.length} data telah dihapus.` });
+      setSelectedIds(new Set());
+      setConfirmOpen(false);
+      if (rows.length === ids.length && page > 1) setPage(p => p - 1);
+      else loadData();
+    } catch (err: any) {
+      toast({ title: "Gagal menghapus", description: err?.message ?? "Unknown error", variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const normalizeSentiment = (v: any): Sentiment | null => {
     if (v == null) return null;
     const s = String(v).trim().toLowerCase();
