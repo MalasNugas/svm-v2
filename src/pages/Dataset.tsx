@@ -46,12 +46,16 @@ async function exportPDF(filter: Sentiment | "all", q: string) {
 
 export default function Dataset() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { isAdmin } = useRole();
   const [rows, setRows] = useState<TweetRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState<Sentiment | "all">("all");
   const [q, setQ] = useState(searchParams.get("q") ?? "");
   const [importing, setImporting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const pageSize = 20;
   const pages = Math.max(1, Math.ceil(total / pageSize));
