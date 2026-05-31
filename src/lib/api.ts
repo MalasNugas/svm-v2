@@ -235,7 +235,7 @@ export async function runStratifiedSplit(): Promise<SplitSummary> {
   }
 
   const chunkSize = 400;
-  const updateIn = async (ids: string[], patch: Record<string, unknown>) => {
+  const updateIn = async (ids: string[], patch: any) => {
     for (let i = 0; i < ids.length; i += chunkSize) {
       const slice = ids.slice(i, i + chunkSize);
       const { error } = await supabase.from("tweets").update(patch).in("id", slice);
@@ -244,6 +244,7 @@ export async function runStratifiedSplit(): Promise<SplitSummary> {
   };
   await updateIn(trainIds, { split: "train", sentiment: null, predicted_sentiment: null, confidence: null });
   await updateIn(testIds, { split: "test", sentiment: null, predicted_sentiment: null, confidence: null });
+
 
   return { total: all.length, train: trainIds.length, test: testIds.length, perClass };
 }
