@@ -107,16 +107,18 @@ export async function fetchTopDestinations() {
   }).sort((a, b) => b.mentions - a.mentions);
 }
 
-export async function fetchTweets(opts: { page?: number; pageSize?: number; sentiment?: Sentiment | "all"; q?: string } = {}) {
+export async function fetchTweets(opts: { page?: number; pageSize?: number; sentiment?: Sentiment | "all"; q?: string; split?: "train" | "test" | "all" } = {}) {
   const page = opts.page ?? 1;
   const pageSize = opts.pageSize ?? 20;
   const from = (page - 1) * pageSize;
   let q = supabase.from("tweets").select("*", { count: "exact" }).order("created_at", { ascending: false });
   if (opts.sentiment && opts.sentiment !== "all") q = q.eq("sentiment", opts.sentiment);
+  if (opts.split && opts.split !== "all") q = q.eq("split", opts.split);
   if (opts.q) q = q.ilike("text", `%${opts.q}%`);
   const { data, count } = await q.range(from, from + pageSize - 1);
   return { rows: (data ?? []) as TweetRow[], total: count ?? 0, page, pageSize };
 }
+
 
 export async function analyzeSentiment(text: string) {
   const { data, error } = await supabase.functions.invoke("analyze-sentiment", {
