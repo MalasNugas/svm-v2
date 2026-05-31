@@ -39,8 +39,11 @@ export type Database = {
           created_at: string
           id: string
           labeled_at: string | null
+          predicted_sentiment: string | null
+          processed_text: string | null
           sentiment: Database["public"]["Enums"]["sentiment_label"] | null
           source: string
+          split: string | null
           text: string
         }
         Insert: {
@@ -49,8 +52,11 @@ export type Database = {
           created_at?: string
           id?: string
           labeled_at?: string | null
+          predicted_sentiment?: string | null
+          processed_text?: string | null
           sentiment?: Database["public"]["Enums"]["sentiment_label"] | null
           source?: string
+          split?: string | null
           text: string
         }
         Update: {
@@ -59,8 +65,11 @@ export type Database = {
           created_at?: string
           id?: string
           labeled_at?: string | null
+          predicted_sentiment?: string | null
+          processed_text?: string | null
           sentiment?: Database["public"]["Enums"]["sentiment_label"] | null
           source?: string
+          split?: string | null
           text?: string
         }
         Relationships: []
