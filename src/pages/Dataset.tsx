@@ -51,6 +51,8 @@ export default function Dataset() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState<Sentiment | "all">("all");
+  const [splitFilter, setSplitFilter] = useState<"train" | "test" | "all">("all");
+
   const [q, setQ] = useState(searchParams.get("q") ?? "");
   const [importing, setImporting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -67,14 +69,15 @@ export default function Dataset() {
   }, [searchParams]);
 
   const loadData = () => {
-    fetchTweets({ page, pageSize, sentiment: filter, q }).then(({ rows, total }) => {
+    fetchTweets({ page, pageSize, sentiment: filter, q, split: splitFilter }).then(({ rows, total }) => {
       setRows(rows); setTotal(total);
     }).catch(console.error);
   };
 
-  useEffect(loadData, [page, filter, q]);
+  useEffect(loadData, [page, filter, q, splitFilter]);
 
-  useEffect(() => { setSelectedIds(new Set()); }, [page, filter, q]);
+  useEffect(() => { setSelectedIds(new Set()); }, [page, filter, q, splitFilter]);
+
 
   const allOnPageSelected = rows.length > 0 && rows.every(r => selectedIds.has(r.id));
   const toggleRow = (id: string) => {
