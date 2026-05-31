@@ -9,10 +9,15 @@ export interface TweetRow {
   text: string;
   source: string;
   sentiment: Sentiment | null;
+  actual_sentiment: Sentiment | null;
+  predicted_sentiment: Sentiment | null;
+  split: "train" | "test" | null;
+  processed_text: string | null;
   confidence: number | null;
   created_at: string;
   labeled_at: string | null;
 }
+
 
 export const auth = {
   signIn: (email: string, password: string) =>
