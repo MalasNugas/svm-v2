@@ -140,3 +140,152 @@ export async function autoLabelBatch(limit = 25) {
   if (error) throw error;
   return data as { processed: number; requested: number };
 }
+
+// ---------- Train/Test split & model training ----------
+
+import { train as trainNB, seededShuffle, type Label } from "./ml";
+
+export interface SplitSummary {
+  total: number;
+  train: number;
+  test: number;
+  perClass: { label: Sentiment; train: number; test: number }[];
+}
+
+export interface TrainingStatus {
+  total: number;
+  train: number;
+  test: number;
+  predicted: number;
+  perClass: { label: Sentiment; train: number; test: number; predicted: number }[];
+}
+
+export async function fetchTrainingStatus(): Promise<TrainingStatus> {
+  const all: any[] = [];
+  let from = 0;
+  const pageSize = 1000;
+  while (true) {
+    const { data, error } = await supabase
+      .from("tweets")
+      .select("actual_sentiment,split,predicted_sentiment")
+      .range(from, from + pageSize - 1);
+    if (error) throw error;
+    const rows = data ?? [];
+    all.push(...rows);
+    if (rows.length < pageSize) break;
+    from += pageSize;
+  }
+  const labels: Sentiment[] = ["positive", "neutral", "negative"];
+  const perClass = labels.map((l) => {
+    const cls = all.filter((r) => r.actual_sentiment === l);
+    return {
+      label: l,
+      train: cls.filter((r) => r.split === "train").length,
+      test: cls.filter((r) => r.split === "test").length,
+      predicted: cls.filter((r) => r.split === "test" && r.predicted_sentiment).length,
+    };
+  });
+  return {
+    total: all.length,
+    train: all.filter((r) => r.split === "train").length,
+    test: all.filter((r) => r.split === "test").length,
+    predicted: all.filter((r) => r.split === "test" && r.predicted_sentiment).length,
+    perClass,
+  };
+}
+
+const SPLIT_SEED = 42;
+const TEST_RATIO = 0.2;
+
+async function fetchAllForTraining() {
+  const all: { id: string; processed_text: string | null; text: string; actual_sentiment: Sentiment | null; split: string | null }[] = [];
+  const pageSize = 1000;
+  let from = 0;
+  while (true) {
+    const { data, error } = await supabase
+      .from("tweets")
+      .select("id,processed_text,text,actual_sentiment,split")
+      .order("id")
+      .range(from, from + pageSize - 1);
+    if (error) throw error;
+    const rows = (data ?? []) as any[];
+    all.push(...rows);
+    if (rows.length < pageSize) break;
+    from += pageSize;
+  }
+  return all;
+}
+
+export async function runStratifiedSplit(): Promise<SplitSummary> {
+  const all = await fetchAllForTraining();
+  const labels: Sentiment[] = ["positive", "neutral", "negative"];
+  const trainIds: string[] = [];
+  const testIds: string[] = [];
+  const perClass: SplitSummary["perClass"] = [];
+
+  for (const l of labels) {
+    const cls = all.filter((r) => r.actual_sentiment === l);
+    const shuffled = seededShuffle(cls, SPLIT_SEED + labels.indexOf(l));
+    const testCount = Math.round(shuffled.length * TEST_RATIO);
+    const test = shuffled.slice(0, testCount);
+    const train = shuffled.slice(testCount);
+    trainIds.push(...train.map((r) => r.id));
+    testIds.push(...test.map((r) => r.id));
+    perClass.push({ label: l, train: train.length, test: test.length });
+  }
+
+  const chunkSize = 400;
+  const updateIn = async (ids: string[], patch: Record<string, unknown>) => {
+    for (let i = 0; i < ids.length; i += chunkSize) {
+      const slice = ids.slice(i, i + chunkSize);
+      const { error } = await supabase.from("tweets").update(patch).in("id", slice);
+      if (error) throw error;
+    }
+  };
+  await updateIn(trainIds, { split: "train", sentiment: null, predicted_sentiment: null, confidence: null });
+  await updateIn(testIds, { split: "test", sentiment: null, predicted_sentiment: null, confidence: null });
+
+  return { total: all.length, train: trainIds.length, test: testIds.length, perClass };
+}
+
+export async function runTraining(): Promise<{ trained: number; predicted: number }> {
+  const all = await fetchAllForTraining();
+  const trainRows = all
+    .filter((r) => r.split === "train" && r.actual_sentiment)
+    .map((r) => ({ text: r.processed_text || r.text, label: r.actual_sentiment as Label }));
+  const testRows = all.filter((r) => r.split === "test");
+  if (!trainRows.length) throw new Error("Tidak ada data train. Jalankan split dulu.");
+  if (!testRows.length) throw new Error("Tidak ada data test. Jalankan split dulu.");
+
+  const model = trainNB(trainRows);
+
+  // Group predictions by (label, rounded confidence) so we can batch updates with .in()
+  const groups = new Map<string, { patch: Record<string, unknown>; ids: string[] }>();
+  const now = new Date().toISOString();
+  for (const r of testRows) {
+    const p = model.predict(r.processed_text || r.text);
+    const conf = Number(p.confidence.toFixed(3));
+    const key = `${p.label}|${conf}`;
+    const patch = { sentiment: p.label, predicted_sentiment: p.label, confidence: conf, labeled_at: now };
+    const g = groups.get(key);
+    if (g) g.ids.push(r.id);
+    else groups.set(key, { patch, ids: [r.id] });
+  }
+  const chunkSize = 400;
+  for (const g of groups.values()) {
+    for (let i = 0; i < g.ids.length; i += chunkSize) {
+      const ids = g.ids.slice(i, i + chunkSize);
+      const { error } = await supabase.from("tweets").update(g.patch).in("id", ids);
+      if (error) throw error;
+    }
+  }
+  return { trained: trainRows.length, predicted: testRows.length };
+}
+
+export async function resetSplit() {
+  const { error } = await supabase
+    .from("tweets")
+    .update({ split: null, sentiment: null, predicted_sentiment: null, confidence: null, labeled_at: null })
+    .not("id", "is", null);
+  if (error) throw error;
+}
