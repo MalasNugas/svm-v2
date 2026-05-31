@@ -261,7 +261,7 @@ export async function runTraining(): Promise<{ trained: number; predicted: numbe
   const model = trainNB(trainRows);
 
   // Group predictions by (label, rounded confidence) so we can batch updates with .in()
-  const groups = new Map<string, { patch: Record<string, unknown>; ids: string[] }>();
+  const groups = new Map<string, { patch: any; ids: string[] }>();
   const now = new Date().toISOString();
   for (const r of testRows) {
     const p = model.predict(r.processed_text || r.text);
