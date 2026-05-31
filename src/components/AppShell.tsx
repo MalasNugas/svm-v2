@@ -14,7 +14,9 @@ const allNavItems = [
   { to: "/dashboard", label: "Dashboard", icon: "dashboard", adminOnly: false },
   { to: "/analysis", label: "Analysis", icon: "analytics", adminOnly: false },
   { to: "/dataset", label: "Dataset", icon: "database", adminOnly: true },
+  { to: "/training", label: "Model Training", icon: "model_training", adminOnly: true },
   { to: "/reports", label: "Reports", icon: "summarize", adminOnly: true },
+
   { to: "/tourism", label: "Tourism", icon: "map", adminOnly: false },
   { to: "/about", label: "About", icon: "info", adminOnly: false },
 ];
