@@ -192,7 +192,7 @@ export default function Dataset() {
           </div>
         </div>
 
-        <div className="mt-8 bg-surface-lowest rounded-2xl p-5 grid grid-cols-1 md:grid-cols-4 gap-3 shadow-ambient">
+        <div className="mt-8 bg-surface-lowest rounded-2xl p-5 grid grid-cols-1 md:grid-cols-5 gap-3 shadow-ambient">
           <div className="md:col-span-2 flex items-center gap-3 bg-surface-low rounded-xl px-4 py-3">
             <span className="material-symbols-outlined text-muted-foreground text-[20px]">search</span>
             <input value={q} onChange={(e) => { setPage(1); setQ(e.target.value); }} placeholder="Filter by text snippet..." className="bg-transparent flex-1 outline-none text-sm placeholder:text-muted-foreground" />
@@ -204,10 +204,17 @@ export default function Dataset() {
             <option value="neutral">Neutral</option>
             <option value="negative">Negative</option>
           </select>
+          <select value={splitFilter} onChange={(e) => { setPage(1); setSplitFilter(e.target.value as any); }}
+            className="bg-surface-low rounded-xl px-4 py-3 text-sm text-primary font-semibold outline-none">
+            <option value="all">All Splits</option>
+            <option value="train">Train only</option>
+            <option value="test">Test only</option>
+          </select>
           <div className="bg-surface-low rounded-xl px-4 py-3 text-sm text-muted-foreground flex items-center justify-center font-semibold">
             Source: Twitter
           </div>
         </div>
+
 
         {isAdmin && selectedIds.size > 0 && (
           <div className="mt-6 bg-surface-lowest rounded-2xl shadow-ambient px-6 py-4 flex items-center justify-between">
