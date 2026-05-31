@@ -52,10 +52,12 @@ export interface ModelMetrics {
 export async function fetchModelMetrics(): Promise<ModelMetrics> {
   const { data } = await supabase
     .from("tweets")
-    .select("sentiment,actual_sentiment")
+    .select("sentiment,actual_sentiment,split")
+    .eq("split", "test")
     .not("sentiment", "is", null)
     .not("actual_sentiment", "is", null);
   const rows = (data ?? []) as { sentiment: Sentiment; actual_sentiment: Sentiment }[];
+
   const labels: Sentiment[] = ["positive", "neutral", "negative"];
   const idx = (s: Sentiment) => labels.indexOf(s);
   const matrix: number[][] = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
