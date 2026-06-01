@@ -1,93 +1,140 @@
-## Tujuan
 
-Mengganti pendekatan "import 197 hasil SVM jadi" menjadi alur **train/test split asli** di website: import 984 baris dari `Analisis-Sentimen-Pariwisata-NTT.xlsx`, lalu sistem membagi otomatis menjadi train (~787) dan test (~197), melatih model, memprediksi data test, dan menampilkan hasilnya.
+# Migrasi ML Training ke Express.js + Python SVM
 
-## Struktur file 984 baris
+Cakupan terbatas: **hanya pipeline training/prediksi** yang dipindah. Auth, dataset CRUD, dan dashboard tetap di Lovable Cloud (Supabase) supaya skripsi tidak ikut bergeser. Sisi Lovable hanya berubah: tombol Train & Predict memanggil API Express, lalu menyimpan hasil prediksi balik ke tabel `tweets`.
 
-Kolom yang terdeteksi:
-- `full_text` — tweet asli
-- `cleaning`, `case_folding`, `hasil_normalisasi`, `tokenize`, `stopword removal`, `steming_data` — tahap preprocessing
-- `Sentiment Label` — kosong semua (akan diisi prediksi model)
-- `Validasi Label` — ground truth: **Positif 482, Netral 412, Negatif 90** (total 984)
+## Arsitektur
 
-Fitur yang akan dipakai untuk pelatihan: `steming_data` (sudah bersih + stemmed).
+```text
+[ React (Lovable) ]  --auth & data CRUD-->  [ Supabase / Lovable Cloud ]
+        |
+        |  POST /train, /predict  (JSON)
+        v
+[ Express server (Node) ]  --spawn-->  [ Python: scikit-learn SVM ]
+        |
+        +--cache model & dataset di SQLite (server/data/app.db)
+```
 
-## Yang akan dilakukan
+- **Express + SQLite**: menyimpan dataset training/test, model terlatih (joblib path), riwayat training, metrik.
+- **Python SVM**: `TfidfVectorizer` + `LinearSVC` (atau `SVC(kernel='linear')`) — sama persis pola yang menghasilkan `hasil_prediksi_Data_Testing.xlsx`.
+- **Sumber data**: Express menarik 984 baris dari Supabase sekali (atau menerima dump dari frontend), simpan ke SQLite lokal supaya training offline.
 
-### 1. Migration: ubah skema `tweets`
+## Saran hosting (jawaban "belum tahu")
 
-Tambah kolom:
-- `processed_text text` — hasil `steming_data` (input fitur model)
-- `split text` — `'train'` | `'test'` | `null`
-- `predicted_sentiment text` — hasil prediksi model (untuk baris test)
-- (kolom `actual_sentiment` & `sentiment` yang sudah ada tetap dipakai)
+Untuk skripsi, urutan rekomendasi:
 
-Mapping akhir untuk tiap baris:
-- `text` ← `full_text`
-- `processed_text` ← `steming_data`
-- `actual_sentiment` ← `Validasi Label` (Positif/Netral/Negatif → positive/neutral/negative)
-- `sentiment` ← null awalnya; diisi `predicted_sentiment` hanya untuk baris test setelah training
-- `split` ← diisi oleh proses split (langkah 3)
+1. **Lokal (`localhost:3001`)** saat demo sidang — paling stabil, Python+sklearn jalan natif, tidak ada cold-start. Frontend Lovable bisa memanggilnya via `VITE_API_URL=http://localhost:3001` di dev.
+2. **Railway** — gratis $5/bulan, support Node + Python via Nixpacks, persisten SQLite via volume. Cocok kalau ingin demo online.
+3. **Render** free tier — bisa, tapi cold start ~30s dan SQLite hilang saat re-deploy (kecuali pakai disk berbayar).
+4. **Fly.io** — gratis, persisten volume untuk SQLite, butuh sedikit setup Dockerfile.
 
-### 2. Reset data dan import 984 baris
+Default plan ini: **siapkan untuk lokal dulu, plus `Dockerfile` siap-pakai Railway**.
 
-`DELETE FROM tweets`, lalu insert 984 baris dari `Analisis-Sentimen-Pariwisata-NTT.xlsx` dengan `split = null`, `sentiment = null`, `actual_sentiment` terisi dari Validasi Label.
+## Struktur folder baru
 
-### 3. Halaman baru: **Model Training** (`/training`, admin only)
+```text
+server/
+  package.json
+  src/
+    index.ts          # Express app, CORS, routes
+    db.ts             # better-sqlite3 init + schema
+    auth.ts           # middleware verifikasi JWT Supabase (pakai SUPABASE_JWKS)
+    routes/
+      dataset.ts      # POST /dataset/sync  (tarik dari Supabase, simpan ke SQLite)
+      train.ts        # POST /train         (split + spawn python train.py)
+      predict.ts      # POST /predict       (single text → label)
+      metrics.ts      # GET  /metrics       (akurasi, F1, confusion matrix)
+  python/
+    train.py          # stratified split + TF-IDF + LinearSVC + dump joblib + tulis hasil ke SQLite
+    predict.py        # load joblib + predict 1 teks (stdin/argv → stdout JSON)
+    requirements.txt  # scikit-learn, pandas, joblib, sastrawi (opsional stemming)
+  data/
+    app.db            # SQLite (auto-created)
+    models/svm.joblib # model tersimpan
+  Dockerfile          # node:20 + python3 + pip install
+  README.md           # cara run lokal & deploy Railway
+```
 
-Berisi 3 tombol:
+## Skema SQLite (di Express)
 
-**(a) Stratified Split 80/20**
-- Ambil semua baris, kelompokkan per `actual_sentiment`
-- Acak per kelas dengan seed tetap, ambil 80% pertama → `train`, 20% sisa → `test`
-- Hasil perkiraan: train ~787, test ~197 (Positif 96, Netral 82, Negatif 18 di test — sebanding dengan file referensi Anda)
-- Update kolom `split` di DB
+```sql
+CREATE TABLE tweets (
+  id TEXT PRIMARY KEY,
+  text TEXT NOT NULL,
+  processed_text TEXT,
+  actual_sentiment TEXT,   -- positive/neutral/negative
+  split TEXT,              -- train/test/null
+  predicted_sentiment TEXT,
+  confidence REAL
+);
+CREATE TABLE training_runs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  algo TEXT,
+  accuracy REAL,
+  macro_f1 REAL,
+  confusion_json TEXT
+);
+```
 
-**(b) Train & Predict**
-- Jalan di edge function (`train-model`) supaya cepat dan tidak bebani browser
-- Algoritma: **TF-IDF + Multinomial Naive Bayes** (implementasi murni TypeScript, tanpa dependency tambahan). Catatan: implementasi SVM multikelas dari nol di Deno cukup berat; NB memberi baseline yang reasonable dan bisa diganti ke logistic regression nanti. Jika Anda ingin SVM persis, itu memerlukan backend Express terpisah (di luar scope sekali jalan ini).
-- Latih di 787 baris train, prediksi 197 baris test, tulis hasil ke `tweets.sentiment` + `tweets.predicted_sentiment` + `tweets.confidence`
+## Endpoint Express
 
-**(c) Reset split**
-- Set `split`, `sentiment`, `predicted_sentiment`, `confidence` kembali ke null
+| Method | Path | Fungsi |
+|---|---|---|
+| POST | `/dataset/sync` | Tarik 984 baris dari Supabase REST (service-role key di env server) → upsert ke SQLite |
+| POST | `/train` | Stratified split 80/20 (seed 42) → spawn `python train.py` → simpan model + metrik |
+| GET  | `/metrics` | Akurasi, macro-F1, confusion matrix dari training_runs terbaru |
+| POST | `/predict` | `{text}` → `{sentiment, confidence}` via `python predict.py` |
+| GET  | `/test-results` | 197 baris test + actual vs predicted (untuk halaman Reports) |
 
-UI menampilkan ringkasan: jumlah train/test per kelas, status terakhir, dan tombol untuk lihat hasil di Reports.
+Semua endpoint memerlukan header `Authorization: Bearer <supabase_jwt>`; middleware verifikasi via JWKS. Hanya role `admin` boleh akses `/train` & `/dataset/sync`.
 
-### 4. Update `fetchModelMetrics` di `src/lib/api.ts`
+## Perubahan di project Lovable (frontend)
 
-- Hitung confusion matrix dari baris dengan `split = 'test'` saja (197 baris)
-- Baris matrix = `actual_sentiment`, kolom = `sentiment` (prediksi)
-- Accuracy, precision, recall, F1, support — sama seperti sekarang tapi dibatasi pada test set
+- Tambah `VITE_API_URL` di `.env` (default `http://localhost:3001`).
+- File baru `src/lib/expressApi.ts` — wrapper `fetch` dengan auto-attach JWT dari `supabase.auth.getSession()`.
+- `src/pages/Training.tsx`:
+  - Tombol **Sync Dataset → Express** (panggil `/dataset/sync`).
+  - Tombol **Train SVM (Python)** (panggil `/train`) — ganti pemanggilan `runTraining` lama.
+  - Panel hasil baca dari `/metrics`.
+- `src/lib/api.ts`: `fetchModelMetrics` bisa toggle sumber (Supabase test rows ATAU Express `/metrics`). Default Express jika `VITE_API_URL` ada.
+- `src/pages/Analysis.tsx`: `analyzeSentiment` opsional dialihkan ke `/predict` Express agar hasil konsisten dengan model SVM (bukan Gemini).
 
-### 5. Halaman Dataset
+Tidak ada perubahan di tabel Supabase. File `src/lib/ml.ts` (Naive Bayes JS) dibiarkan sebagai fallback offline.
 
-- Tambah filter dropdown: All / Train / Test (filter `split`)
-- Tambah kolom kecil "Split" di tabel
-- Selain itu tidak berubah
+## Detail teknis Python
 
-### 6. Halaman Dashboard
+`train.py` membaca SQLite, melakukan:
+```python
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.svm import LinearSVC
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, confusion_matrix
+# stratify=y, test_size=0.2, random_state=42
+```
+Output: `models/svm.joblib` + JSON metrik ke stdout → Express simpan ke `training_runs`.
 
-- Total tetap 984, ditambah ringkasan "Train: 787 · Test: 197 · Predicted: 197"
-- Distribusi sentimen pakai `actual_sentiment` (kalau ada) supaya tetap konsisten
+`predict.py`: load joblib, baca teks dari `argv[1]`, output JSON `{label, confidence}` (confidence = `decision_function` di-softmax atau jarak ke hyperplane di-normalisasi).
 
-## File yang diubah
+## Langkah eksekusi (urutan saat build mode)
 
-- Migration baru: tambah kolom `processed_text`, `split`, `predicted_sentiment` di `tweets`; reset isi tabel
-- `supabase/functions/train-model/index.ts` (baru): TF-IDF + Multinomial NB train & predict
-- `src/pages/Training.tsx` (baru) + route di `src/App.tsx`
-- `src/components/AppShell.tsx`: tambah link sidebar "Model Training" (admin)
-- `src/lib/api.ts`: filter `fetchModelMetrics` ke `split = 'test'`; tambah `runSplit()`, `runTraining()`, `resetSplit()`
-- `src/pages/Dataset.tsx`: tambah filter split + kolom split
-- `src/pages/Dashboard.tsx`: tampilkan ringkasan split
+1. Buat folder `server/` dengan `package.json` (express, better-sqlite3, jose untuk JWKS, @supabase/supabase-js, cors, dotenv, zod) + `tsx` untuk dev.
+2. Tulis `db.ts`, `auth.ts`, semua route, dan `python/train.py` + `predict.py` + `requirements.txt`.
+3. Tulis `Dockerfile` (node:20-slim + python3 + pip).
+4. Tulis `server/README.md` dengan instruksi:
+   - `cd server && npm install && pip install -r python/requirements.txt`
+   - Set env: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_JWKS_URL`, `PORT=3001`
+   - `npm run dev`
+5. Tambah `VITE_API_URL` ke `.env` frontend (placeholder `http://localhost:3001`).
+6. Buat `src/lib/expressApi.ts`.
+7. Update `src/pages/Training.tsx` + `src/lib/api.ts` agar memanggil Express bila `VITE_API_URL` di-set.
+8. Update `src/pages/Reports.tsx` agar tarik confusion matrix dari `/metrics`.
 
-## Catatan & batasan
+## Catatan penting untuk Anda
 
-- **Bukan SVM persis** seperti file `hasil_prediksi_Data_Testing.xlsx`. File itu hasil model SVM Anda di luar website. Plan ini melatih model **Naive Bayes** sendiri, jadi angka akurasi tidak akan persis sama dengan file Excel itu — tapi alur train/test split-nya nyata dan dataset-nya identik.
-- Kalau Anda mau hasil **persis sama dengan file SVM**, opsinya: jalankan SVM di backend Express (yang sudah saya generate) dan kirim prediksinya ke Lovable Cloud — itu request terpisah.
-- Seed split tetap (deterministik) supaya hasil reproducible.
+- Lovable **tidak menjalankan** folder `server/`; itu murni source code. Anda harus `cd server && npm run dev` di komputer/VPS sendiri.
+- Karena `localhost:3001` tidak bisa diakses dari preview Lovable hosted, **pengujian end-to-end paling mulus dilakukan setelah deploy** ke Railway, atau dengan menjalankan frontend juga secara lokal (`bun dev` di project Lovable).
+- Auth tetap Supabase, jadi Anda tidak perlu bikin login baru.
+- Setelah ini berjalan, tabel `tweets` di Supabase tetap jadi "source of truth"; SQLite hanya cache training.
 
-## Di luar scope
-
-- Implementasi SVM asli di edge function
-- Hyperparameter tuning / cross-validation
-- Mengubah halaman Analysis (tetap pakai Gemini)
+Setujui plan ini, dan saya akan generate seluruh kode `server/` + patch frontend.
