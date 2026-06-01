@@ -1,6 +1,8 @@
-// API layer. Currently backed by Lovable Cloud (Supabase) for testing the methodology.
-// To migrate to Express later, replace the implementations below to call your Express endpoints.
+// API layer. Backed by Lovable Cloud (Supabase) — opsional di-augment dengan backend Express
+// (lihat src/lib/expressApi.ts) untuk training SVM Python dan single-text predict.
 import { supabase } from "@/integrations/supabase/client";
+import { expressApi } from "@/lib/expressApi";
+
 
 export type Sentiment = "positive" | "neutral" | "negative";
 
@@ -126,6 +128,14 @@ export async function fetchTweets(opts: { page?: number; pageSize?: number; sent
 
 
 export async function analyzeSentiment(text: string) {
+  // Prefer SVM Express bila VITE_API_URL di-set & model sudah dilatih.
+  if (expressApi.enabled) {
+    try {
+      return await expressApi.predict(text);
+    } catch (e) {
+      console.warn("[analyzeSentiment] Express predict gagal, fallback ke Gemini:", e);
+    }
+  }
   const { data, error } = await supabase.functions.invoke("analyze-sentiment", {
     body: { mode: "single", text },
   });
