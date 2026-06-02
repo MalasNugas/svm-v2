@@ -15,19 +15,50 @@ Express  ──spawn──►  python (scikit-learn LinearSVC + TF-IDF)
 
 Auth tetap pakai Supabase: setiap request harus membawa `Authorization: Bearer <supabase_jwt>` — server memverifikasinya via `supabase.auth.getUser`. Endpoint mutasi mewajibkan role `admin` (dibaca dari tabel `user_roles`).
 
-## Setup lokal
+## Setup lokal (langkah demi langkah)
 
 Prasyarat: Node 20+, Python 3.10+, pip.
 
+**1. Ambil service role key dari Lovable Cloud**
+
+- Buka project di Lovable → klik tombol **Backend** (kanan atas editor).
+- Pilih **Project Settings → API Keys**.
+- Copy nilai `service_role` (panjang, diawali `eyJ...`). **Jangan share / commit.**
+
+**2. Setup folder server**
+
 ```bash
 cd server
-cp .env.example .env       # isi SUPABASE_SERVICE_ROLE_KEY
+cp .env.example .env
+# Buka .env di editor, paste service_role key di baris SUPABASE_SERVICE_ROLE_KEY=
 npm install
 pip3 install -r python/requirements.txt
-npm run dev                # http://localhost:3001
 ```
 
-Cari **SUPABASE_SERVICE_ROLE_KEY** di Lovable: **Backend → Settings → API keys → service_role**. Jangan commit nilainya.
+**3. Verifikasi koneksi ke Supabase**
+
+```bash
+npm run check
+```
+
+Output yang benar: `✅ Koneksi OK. Jumlah baris di tabel 'tweets': 984`.
+Kalau muncul error, cek lagi nilai `SUPABASE_SERVICE_ROLE_KEY` di `server/.env`.
+
+**4. Jalankan server**
+
+```bash
+npm run dev    # http://localhost:3001
+```
+
+**5. Hubungkan frontend**
+
+Di **root project Lovable** (bukan di `server/`), buat file `.env.local`:
+
+```
+VITE_API_URL=http://localhost:3001
+```
+
+Lalu jalankan frontend lokal: `bun dev`. Tombol **Train SVM (Python)** di halaman `/training` sekarang akan memanggil server Express.
 
 ## Pemakaian (dari frontend)
 
