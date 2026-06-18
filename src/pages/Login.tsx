@@ -27,10 +27,8 @@ export default function Login() {
   const { user, loading } = useAuth();
   const { t } = useT();
   const [showPwd, setShowPwd] = useState(false);
-  const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -45,17 +43,10 @@ export default function Login() {
     e.preventDefault();
     setBusy(true);
     try {
-      if (mode === "login") {
-        const { data, error } = await auth.signIn(email, password);
-        if (error) throw error;
-        toast.success("Welcome back");
-        navigate(await roleHome(data.user.id), { replace: true });
-      } else {
-        const { data, error } = await auth.signUp(email, password, name);
-        if (error) throw error;
-        toast.success("Account created — please check your email if confirmation is required.");
-        navigate(await roleHome(data.user?.id), { replace: true });
-      }
+      const { data, error } = await auth.signIn(email, password);
+      if (error) throw error;
+      toast.success("Welcome back");
+      navigate(await roleHome(data.user.id), { replace: true });
     } catch (err: any) {
       toast.error(err?.message ?? "Authentication failed");
     } finally {
@@ -93,23 +84,16 @@ export default function Login() {
             Social Media Sentiment Analysis
           </div>
           <h2 className="font-headline text-4xl font-extrabold text-primary">
-            {mode === "login" ? "Welcome Back" : "Create Account"}
+            Admin Login
           </h2>
           <p className="mt-3 text-muted-foreground">
-            {mode === "login" ? "Access the researcher dashboard to continue your analysis." : "Join the thesis platform to start curating sentiment insights."}
+            Khusus admin untuk mengelola dataset, training, dan profil.
           </p>
 
           <form onSubmit={onSubmit} className="mt-10 space-y-6">
-            {mode === "register" && (
-              <div>
-                <label className="text-[11px] font-bold tracking-[0.18em] uppercase text-muted-foreground">Display Name</label>
-                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name"
-                  className="mt-2 w-full bg-transparent border-0 border-b border-border focus:border-secondary outline-none py-3 text-primary placeholder:text-muted-foreground/60" />
-              </div>
-            )}
             <div>
               <label className="text-[11px] font-bold tracking-[0.18em] uppercase text-muted-foreground">Email Address</label>
-              <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="researcher@thesis.edu"
+              <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@flores.local"
                 className="mt-2 w-full bg-transparent border-0 border-b border-border focus:border-secondary outline-none py-3 text-primary placeholder:text-muted-foreground/60" />
             </div>
             <div>
@@ -124,16 +108,17 @@ export default function Login() {
             </div>
             <button type="submit" disabled={busy}
               className="w-full py-4 gradient-primary text-primary-foreground rounded-xl font-bold text-sm shadow-ambient hover:saturate-150 transition-all disabled:opacity-60">
-              {busy ? "Please wait..." : mode === "login" ? "Login to Dashboard" : "Create Researcher Account"}
+              {busy ? "Please wait..." : "Login to Dashboard"}
             </button>
             <p className="text-center text-sm text-muted-foreground">
-              {mode === "login" ? "New to Flores Insight? " : "Already have an account? "}
-              <button type="button" onClick={() => setMode(mode === "login" ? "register" : "login")} className="font-bold text-primary">
-                {mode === "login" ? "Register Account" : "Sign In"}
+              Bukan admin?{" "}
+              <button type="button" onClick={() => navigate("/dashboard")} className="font-bold text-primary">
+                Kembali ke dashboard publik
               </button>
             </p>
           </form>
         </div>
+
 
         <div className="mt-10 flex flex-wrap justify-between gap-4 text-[11px] tracking-[0.18em] uppercase text-muted-foreground">
           <span>{t("© 2026 NTT Tourism Sentiment Thesis")}</span>

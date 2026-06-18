@@ -1,35 +1,47 @@
-
 ## Tujuan
-Menyamakan tampilan website (Dashboard, Reports, Training, Dataset) dengan isi file `hasil_prediksi_Data_Testing.xlsx`:
-- Total dataset: **984** baris (dari `Analisis-Sentimen-Pariwisata-NTT.xlsx`)
-- Split: **80% train (787) / 20% test (197)**
-- 197 baris test = persis 197 baris di file prediksi, lengkap dengan `Prediksi SVM` & `Confidence Score`
-- Akurasi yang muncul di Reports otomatis jadi **~71.07%** karena dihitung dari kolom test
 
-## Apa yang diubah
-Hanya **data di tabel `tweets`** (Lovable Cloud). Tidak ada perubahan UI / logic frontend — semua halaman membaca dari kolom yang sama (`split`, `actual_sentiment`, `sentiment`, `predicted_sentiment`, `confidence`), jadi begitu data benar, angka di web otomatis cocok.
+Pengunjung biasa bisa membuka semua halaman informasi tanpa login. Login hanya diperlukan untuk admin yang mengelola dataset, training, dan reports.
 
-## Langkah teknis
+## Pembagian Akses
 
-1. **Pra-proses kedua xlsx di sandbox** (script Python sekali pakai, tidak masuk repo):
-   - Baca 984 baris: `full_text` → kolom `text`, `steming_data` → `processed_text`, `Validasi Label` → `actual_sentiment` (Positif/Netral/Negatif → positive/neutral/negative).
-   - Match 197 baris file prediksi via `Teks == steming_data`. Tandai `split='test'`, isi `predicted_sentiment` + `sentiment` dari `Prediksi SVM`, `confidence` dari `Confidence Score`, `labeled_at = now()`.
-   - 787 baris sisanya: `split='train'`, `sentiment=NULL`, `predicted_sentiment=NULL`, `confidence=NULL`.
-   - Generate SQL `TRUNCATE` + multi-row `INSERT` (dibagi beberapa batch ~500/insert).
+**Publik (tanpa login):**
+- `/` Landing
+- `/dashboard` — statistik sentimen
+- `/analysis` — analisis sentimen interaktif
+- `/tourism` — data pariwisata
+- `/about`
+- `/reports` — laporan hasil (read-only)
 
-2. **Jalankan via Supabase migration** (1 migration besar):
-   - `TRUNCATE public.tweets;`
-   - Batch `INSERT INTO public.tweets (id, text, processed_text, actual_sentiment, split, sentiment, predicted_sentiment, confidence, source, created_at, labeled_at) VALUES …`
-   - Tidak ubah skema, tidak ubah RLS.
+**Admin only (perlu login):**
+- `/login`
+- `/dataset` — kelola data tweet
+- `/training` — training model SVM
+- `/profile` — profil admin
 
-3. **Verifikasi**
-   - Query: `SELECT split, COUNT(*) FROM tweets GROUP BY split;` → harus 787 train, 197 test.
-   - Query akurasi: `SELECT AVG((sentiment = actual_sentiment)::int) FROM tweets WHERE split='test';` → ~0.7107.
-   - Buka preview `/reports` dan `/dashboard` untuk konfirmasi visual.
+## Perubahan Kode
+
+1. **`src/App.tsx`** — Hilangkan `RequireAuth` dari rute publik. Sisakan `RequireAuth + RequireRole(admin)` hanya untuk `/dataset`, `/training`, dan `/profile`.
+
+2. **`src/components/AppShell.tsx`** — Navigasi selalu tampil. Item "Dataset" / "Training" hanya muncul jika user login sebagai admin. Tombol "Login" muncul jika belum login; tombol akun + logout muncul jika sudah login.
+
+3. **`src/pages/Index.tsx` / Landing** — Tombol utama mengarah ke `/dashboard` (publik), bukan `/login`.
+
+4. **Halaman publik yang sebelumnya butuh user** — Hapus asumsi `user` selalu ada (mis. greeting "Welcome back"). Fallback ke teks generik untuk guest.
+
+5. **RLS database `tweets`** — Saat ini policy `SELECT` hanya untuk `authenticated`. Tambahkan policy baca untuk `anon` agar dashboard publik bisa fetch data:
+   ```
+   CREATE POLICY "Tweets: public read" ON public.tweets
+   FOR SELECT TO anon USING (true);
+   GRANT SELECT ON public.tweets TO anon;
+   ```
+   Policy admin write/update/delete tetap.
+
+6. **`/login`** — Tetap ada, tapi hilangkan opsi "Register Account" supaya pengunjung tidak bisa bikin akun researcher. Hanya form sign-in.
+
+7. **`useAuth` / `useRole`** — Tidak diubah; tetap bekerja, hanya konsumennya yang menoleransi `user === null`.
 
 ## Catatan
-- Jika ada baris di file prediksi yang `Teks`-nya tidak ketemu di file utama (kemungkinan kecil — sama-sama dari `steming_data`), saya akan laporkan jumlahnya. Default: tetap masukkan sebagai baris baru bila perlu agar 197 test utuh.
-- Backend Express lokal (`server/`) tidak dipakai untuk seeding ini — semua langsung ke Lovable Cloud lewat migration, jadi user tidak perlu jalankan apa-apa di local.
-- Setelah seed, **jangan tekan tombol "Train SVM" / "Run Split"** di halaman Training karena itu akan menimpa angka ini dengan training baru. Saya bisa juga sembunyikan tombol tsb kalau Anda mau (opsional, beritahu saja).
 
-Apakah saya lanjut implementasi?
+- Akun admin `admin@flores.local` yang sudah dibuat tetap berfungsi.
+- Tabel `profiles` & `user_roles` tetap auth-only (tidak diekspos ke anon).
+- Tidak ada perubahan pada server Express / Python.
