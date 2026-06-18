@@ -43,17 +43,10 @@ export default function Login() {
     e.preventDefault();
     setBusy(true);
     try {
-      if (mode === "login") {
-        const { data, error } = await auth.signIn(email, password);
-        if (error) throw error;
-        toast.success("Welcome back");
-        navigate(await roleHome(data.user.id), { replace: true });
-      } else {
-        const { data, error } = await auth.signUp(email, password, name);
-        if (error) throw error;
-        toast.success("Account created — please check your email if confirmation is required.");
-        navigate(await roleHome(data.user?.id), { replace: true });
-      }
+      const { data, error } = await auth.signIn(email, password);
+      if (error) throw error;
+      toast.success("Welcome back");
+      navigate(await roleHome(data.user.id), { replace: true });
     } catch (err: any) {
       toast.error(err?.message ?? "Authentication failed");
     } finally {
