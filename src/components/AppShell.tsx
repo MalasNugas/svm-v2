@@ -188,30 +188,37 @@ export function AppShell({ children, searchPlaceholder, rightSlot, searchValue, 
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="w-10 h-10 rounded-full hover:bg-surface-low flex items-center justify-center text-muted-foreground">
-                  <span className="material-symbols-outlined text-[22px]">settings</span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>{displayName || t("Account")}</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/profile")}>
-                  <span className="material-symbols-outlined text-[18px] mr-2">person</span>
-                  {t("Profile")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/dashboard")}>
-                  <span className="material-symbols-outlined text-[18px] mr-2">dashboard</span>
-                  {t("Dashboard")}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
-                  <span className="material-symbols-outlined text-[18px] mr-2">logout</span>
-                  {t("Sign out")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="w-10 h-10 rounded-full hover:bg-surface-low flex items-center justify-center text-muted-foreground">
+                    <span className="material-symbols-outlined text-[22px]">settings</span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>{displayName || t("Account")}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                    <span className="material-symbols-outlined text-[18px] mr-2">person</span>
+                    {t("Profile")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                    <span className="material-symbols-outlined text-[18px] mr-2">dashboard</span>
+                    {t("Dashboard")}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                    <span className="material-symbols-outlined text-[18px] mr-2">logout</span>
+                    {t("Sign out")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <button onClick={() => navigate("/login")} className="h-10 px-4 rounded-full gradient-primary text-primary-foreground text-sm font-bold flex items-center gap-2 shadow-ambient hover:saturate-150 transition-all">
+                <span className="material-symbols-outlined text-[18px]">login</span>
+                {t("Admin Login")}
+              </button>
+            )}
           </div>
         </header>
 
