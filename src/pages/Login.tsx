@@ -27,10 +27,8 @@ export default function Login() {
   const { user, loading } = useAuth();
   const { t } = useT();
   const [showPwd, setShowPwd] = useState(false);
-  const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
