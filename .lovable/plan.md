@@ -1,62 +1,35 @@
 
-# Sambungkan Server Express ke Supabase (Lovable Cloud)
+## Tujuan
+Menyamakan tampilan website (Dashboard, Reports, Training, Dataset) dengan isi file `hasil_prediksi_Data_Testing.xlsx`:
+- Total dataset: **984** baris (dari `Analisis-Sentimen-Pariwisata-NTT.xlsx`)
+- Split: **80% train (787) / 20% test (197)**
+- 197 baris test = persis 197 baris di file prediksi, lengkap dengan `Prediksi SVM` & `Confidence Score`
+- Akurasi yang muncul di Reports otomatis jadi **~71.07%** karena dihitung dari kolom test
 
-Tujuannya: server Express (`server/`) bisa **tarik 984 baris dari tabel `tweets`** di Supabase Lovable Cloud ke SQLite lokal, lalu jalankan training SVM Python. Auth user (login admin) juga diverifikasi via Supabase JWT.
+## Apa yang diubah
+Hanya **data di tabel `tweets`** (Lovable Cloud). Tidak ada perubahan UI / logic frontend — semua halaman membaca dari kolom yang sama (`split`, `actual_sentiment`, `sentiment`, `predicted_sentiment`, `confidence`), jadi begitu data benar, angka di web otomatis cocok.
 
-Tidak ada perubahan database, tidak ada perubahan frontend logic — hanya konfigurasi & dokumentasi.
+## Langkah teknis
 
-## Yang sudah ada
+1. **Pra-proses kedua xlsx di sandbox** (script Python sekali pakai, tidak masuk repo):
+   - Baca 984 baris: `full_text` → kolom `text`, `steming_data` → `processed_text`, `Validasi Label` → `actual_sentiment` (Positif/Netral/Negatif → positive/neutral/negative).
+   - Match 197 baris file prediksi via `Teks == steming_data`. Tandai `split='test'`, isi `predicted_sentiment` + `sentiment` dari `Prediksi SVM`, `confidence` dari `Confidence Score`, `labeled_at = now()`.
+   - 787 baris sisanya: `split='train'`, `sentiment=NULL`, `predicted_sentiment=NULL`, `confidence=NULL`.
+   - Generate SQL `TRUNCATE` + multi-row `INSERT` (dibagi beberapa batch ~500/insert).
 
-- `server/src/auth.ts` → sudah pakai `supabase.auth.getUser(token)` + cek `user_roles` untuk role `admin`. ✅
-- `server/src/routes/dataset.ts` → sudah panggil Supabase REST untuk sync ke SQLite. ✅
-- `server/.env.example` → sudah berisi `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ALLOWED_ORIGINS`.
+2. **Jalankan via Supabase migration** (1 migration besar):
+   - `TRUNCATE public.tweets;`
+   - Batch `INSERT INTO public.tweets (id, text, processed_text, actual_sentiment, split, sentiment, predicted_sentiment, confidence, source, created_at, labeled_at) VALUES …`
+   - Tidak ubah skema, tidak ubah RLS.
 
-Jadi **kode-nya sudah siap**. Yang kurang hanya: nilai `SERVICE_ROLE_KEY` di `server/.env`, dan instruksi yang lebih jelas.
+3. **Verifikasi**
+   - Query: `SELECT split, COUNT(*) FROM tweets GROUP BY split;` → harus 787 train, 197 test.
+   - Query akurasi: `SELECT AVG((sentiment = actual_sentiment)::int) FROM tweets WHERE split='test';` → ~0.7107.
+   - Buka preview `/reports` dan `/dashboard` untuk konfirmasi visual.
 
-## Yang akan saya kerjakan
+## Catatan
+- Jika ada baris di file prediksi yang `Teks`-nya tidak ketemu di file utama (kemungkinan kecil — sama-sama dari `steming_data`), saya akan laporkan jumlahnya. Default: tetap masukkan sebagai baris baru bila perlu agar 197 test utuh.
+- Backend Express lokal (`server/`) tidak dipakai untuk seeding ini — semua langsung ke Lovable Cloud lewat migration, jadi user tidak perlu jalankan apa-apa di local.
+- Setelah seed, **jangan tekan tombol "Train SVM" / "Run Split"** di halaman Training karena itu akan menimpa angka ini dengan training baru. Saya bisa juga sembunyikan tombol tsb kalau Anda mau (opsional, beritahu saja).
 
-1. **Update `server/.env.example`** — isi otomatis `SUPABASE_URL` Lovable Cloud (`https://dajmilnsjeyhfhmjmkxj.supabase.co`) dan `SUPABASE_JWKS_URL`. `SERVICE_ROLE_KEY` tetap placeholder (Anda copy-paste sendiri — alasannya di bawah).
-
-2. **Tambah skrip helper `server/scripts/check-connection.ts`** — script kecil yang ping Supabase pakai env yang ada, dan tampilkan: jumlah baris di `tweets`, berhasil/gagal verifikasi service key. Run via `npm run check`.
-
-3. **Update `server/README.md`** dengan panduan step-by-step **khusus project ini**:
-   - Cara ambil `SERVICE_ROLE_KEY` dari Lovable Cloud Backend → Project Settings → API
-   - Buat file `server/.env` (copy dari `.env.example`)
-   - `npm install` + `pip install -r python/requirements.txt`
-   - `npm run check` untuk verifikasi koneksi
-   - `npm run dev` untuk jalankan server di `localhost:3001`
-   - Set `VITE_API_URL=http://localhost:3001` di project root `.env.local` agar frontend (saat run lokal `bun dev`) pakai Express
-
-4. **Update `package.json` server** — tambah script `"check": "tsx scripts/check-connection.ts"`.
-
-5. **Update file `src/lib/expressApi.ts`** kalau perlu (cek apakah `VITE_API_URL` sudah di-handle dengan benar dan fallback aman saat kosong).
-
-## Catatan penting
-
-**Kenapa SERVICE_ROLE_KEY tidak bisa saya isi otomatis?**
-Service role key adalah **secret penuh-akses bypass RLS**. Lovable agent tidak boleh menulisnya ke file repo (akan ter-commit). Anda harus:
-1. Buka **Backend** (tombol di kanan atas editor Lovable)
-2. Project Settings → API Keys → copy `service_role` key
-3. Paste ke `server/.env` di komputer Anda (file ini sudah di-`.gitignore`)
-
-**Kenapa frontend tetap perlu run lokal?**
-Karena server Express jalan di `localhost:3001`, preview Lovable yang di-host tidak bisa akses `localhost` komputer Anda. Pilihan:
-- **Demo lokal** (paling mudah untuk skripsi): jalankan `bun dev` + `cd server && npm run dev` di komputer Anda
-- **Deploy server ke Railway** nanti, lalu ubah `VITE_API_URL` ke URL Railway
-
-## File yang akan diubah
-
-- `server/.env.example` (isi default Lovable Cloud)
-- `server/package.json` (script `check`)
-- `server/scripts/check-connection.ts` (baru)
-- `server/README.md` (panduan step-by-step bahasa Indonesia)
-- mungkin `src/lib/expressApi.ts` (kalau ada bug fallback)
-
-## Tidak akan diubah
-
-- Skema database Supabase
-- Tabel `tweets`, `profiles`, `user_roles`
-- Auth flow di frontend
-- File `src/integrations/supabase/client.ts`
-
-Setujui plan ini supaya saya implementasi.
+Apakah saya lanjut implementasi?
