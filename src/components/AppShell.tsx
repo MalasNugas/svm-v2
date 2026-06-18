@@ -97,15 +97,22 @@ export function AppShell({ children, searchPlaceholder, rightSlot, searchValue, 
           ))}
         </nav>
 
-        <button onClick={() => navigate("/profile")} className="flex items-center gap-3 pt-6 hover:opacity-80 text-left">
-          <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-secondary font-bold">
-            {initial}
-          </div>
-          <div className="leading-tight">
-            <p className="text-sm font-bold text-primary">{displayName || t("Guest")}</p>
-            <p className="text-xs text-muted-foreground capitalize">{isAdmin ? t("Admin") : t("Researcher")}</p>
-          </div>
-        </button>
+        {user ? (
+          <button onClick={() => navigate("/profile")} className="flex items-center gap-3 pt-6 hover:opacity-80 text-left">
+            <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-secondary font-bold">
+              {initial}
+            </div>
+            <div className="leading-tight">
+              <p className="text-sm font-bold text-primary">{displayName || t("Guest")}</p>
+              <p className="text-xs text-muted-foreground capitalize">{isAdmin ? t("Admin") : t("Researcher")}</p>
+            </div>
+          </button>
+        ) : (
+          <button onClick={() => navigate("/login")} className="mt-6 w-full py-3 px-4 rounded-xl border border-border text-sm font-bold text-primary hover:bg-surface-container flex items-center justify-center gap-2">
+            <span className="material-symbols-outlined text-[18px]">login</span>
+            {t("Admin Login")}
+          </button>
+        )}
       </aside>
 
       {/* Main */}
