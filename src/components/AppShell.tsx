@@ -73,12 +73,10 @@ export function AppShell({ children, searchPlaceholder, rightSlot, searchValue, 
           </div>
         </div>
 
-        {isAdmin && (
-          <button onClick={() => navigate("/analysis")} className="w-full py-3 px-4 mb-8 gradient-primary text-primary-foreground rounded-xl font-bold flex items-center justify-center gap-2 shadow-ambient hover:saturate-150 transition-all text-sm">
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            {t("New Analysis")}
-          </button>
-        )}
+        <button onClick={() => navigate("/analysis")} className="w-full py-3 px-4 mb-8 gradient-primary text-primary-foreground rounded-xl font-bold flex items-center justify-center gap-2 shadow-ambient hover:saturate-150 transition-all text-sm">
+          <span className="material-symbols-outlined text-[18px]">add</span>
+          {t("New Analysis")}
+        </button>
 
         <nav className="space-y-1 flex-1">
           {navItems.map((item) => (
