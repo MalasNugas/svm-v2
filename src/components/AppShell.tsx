@@ -183,10 +183,12 @@ export function AppShell({ children, searchPlaceholder, rightSlot, searchValue, 
                   <div className="px-2 py-6 text-center text-sm text-muted-foreground">{t("No new activity")}</div>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/analysis")}>
-                  <span className="material-symbols-outlined text-[18px] mr-2">analytics</span>
-                  {t("Run new analysis")}
-                </DropdownMenuItem>
+                {isAdmin && (
+                  <DropdownMenuItem onClick={() => navigate("/analysis")}>
+                    <span className="material-symbols-outlined text-[18px] mr-2">analytics</span>
+                    {t("Run new analysis")}
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
 
