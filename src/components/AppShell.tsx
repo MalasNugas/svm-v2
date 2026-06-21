@@ -12,7 +12,7 @@ import {
 
 const allNavItems = [
   { to: "/dashboard", label: "Dashboard", icon: "dashboard", adminOnly: false },
-  { to: "/analysis", label: "Analysis", icon: "analytics", adminOnly: false },
+  { to: "/analysis", label: "Analysis", icon: "analytics", adminOnly: true },
   { to: "/dataset", label: "Dataset", icon: "database", adminOnly: true },
   { to: "/training", label: "Model Training", icon: "model_training", adminOnly: true },
   { to: "/reports", label: "Reports", icon: "summarize", adminOnly: true },
