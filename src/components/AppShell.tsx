@@ -12,7 +12,7 @@ import {
 
 const allNavItems = [
   { to: "/dashboard", label: "Dashboard", icon: "dashboard", adminOnly: false },
-  { to: "/analysis", label: "Analysis", icon: "analytics", adminOnly: true },
+  { to: "/analysis", label: "Analysis", icon: "analytics", adminOnly: false },
   { to: "/dataset", label: "Dataset", icon: "database", adminOnly: true },
   { to: "/training", label: "Model Training", icon: "model_training", adminOnly: true },
   { to: "/reports", label: "Reports", icon: "summarize", adminOnly: true },
@@ -73,12 +73,10 @@ export function AppShell({ children, searchPlaceholder, rightSlot, searchValue, 
           </div>
         </div>
 
-        {isAdmin && (
-          <button onClick={() => navigate("/analysis")} className="w-full py-3 px-4 mb-8 gradient-primary text-primary-foreground rounded-xl font-bold flex items-center justify-center gap-2 shadow-ambient hover:saturate-150 transition-all text-sm">
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            {t("New Analysis")}
-          </button>
-        )}
+        <button onClick={() => navigate("/analysis")} className="w-full py-3 px-4 mb-8 gradient-primary text-primary-foreground rounded-xl font-bold flex items-center justify-center gap-2 shadow-ambient hover:saturate-150 transition-all text-sm">
+          <span className="material-symbols-outlined text-[18px]">add</span>
+          {t("New Analysis")}
+        </button>
 
         <nav className="space-y-1 flex-1">
           {navItems.map((item) => (
@@ -183,12 +181,10 @@ export function AppShell({ children, searchPlaceholder, rightSlot, searchValue, 
                   <div className="px-2 py-6 text-center text-sm text-muted-foreground">{t("No new activity")}</div>
                 )}
                 <DropdownMenuSeparator />
-                {isAdmin && (
-                  <DropdownMenuItem onClick={() => navigate("/analysis")}>
-                    <span className="material-symbols-outlined text-[18px] mr-2">analytics</span>
-                    {t("Run new analysis")}
-                  </DropdownMenuItem>
-                )}
+                <DropdownMenuItem onClick={() => navigate("/analysis")}>
+                  <span className="material-symbols-outlined text-[18px] mr-2">analytics</span>
+                  {t("Run new analysis")}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
