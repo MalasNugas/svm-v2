@@ -205,7 +205,7 @@ export async function fetchTrainingStatus(): Promise<TrainingStatus> {
 }
 
 const SPLIT_SEED = 42;
-const TEST_RATIO = 0.2;
+const TEST_RATIO = 0.3;
 
 async function fetchAllForTraining() {
   const all: { id: string; processed_text: string | null; text: string; actual_sentiment: Sentiment | null; split: string | null }[] = [];
