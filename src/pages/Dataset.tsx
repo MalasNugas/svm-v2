@@ -58,6 +58,9 @@ export default function Dataset() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteAllOpen, setDeleteAllOpen] = useState(false);
+  const [deleteAllConfirmText, setDeleteAllConfirmText] = useState("");
+  const [deletingAll, setDeletingAll] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const pageSize = 20;
   const pages = Math.max(1, Math.ceil(total / pageSize));
