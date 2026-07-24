@@ -58,6 +58,9 @@ export default function Dataset() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteAllOpen, setDeleteAllOpen] = useState(false);
+  const [deleteAllConfirmText, setDeleteAllConfirmText] = useState("");
+  const [deletingAll, setDeletingAll] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const pageSize = 20;
   const pages = Math.max(1, Math.ceil(total / pageSize));
@@ -112,6 +115,24 @@ export default function Dataset() {
       toast({ title: "Gagal menghapus", description: err?.message ?? "Unknown error", variant: "destructive" });
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    setDeletingAll(true);
+    try {
+      const { error } = await supabase.from("tweets").delete().not("id", "is", null);
+      if (error) throw error;
+      toast({ title: "Semua dataset dihapus", description: `${total.toLocaleString()} baris telah dihapus.` });
+      setDeleteAllOpen(false);
+      setDeleteAllConfirmText("");
+      setSelectedIds(new Set());
+      setPage(1);
+      loadData();
+    } catch (err: any) {
+      toast({ title: "Gagal menghapus semua", description: err?.message ?? "Unknown error", variant: "destructive" });
+    } finally {
+      setDeletingAll(false);
     }
   };
 
@@ -189,6 +210,12 @@ export default function Dataset() {
               <span className="material-symbols-outlined text-[18px]">download</span>
               Download PDF
             </button>
+            {isAdmin && (
+              <button onClick={() => { setDeleteAllConfirmText(""); setDeleteAllOpen(true); }} disabled={total === 0} className="bg-destructive text-destructive-foreground rounded-xl px-5 py-3 text-sm font-bold flex items-center gap-2 hover:opacity-90 disabled:opacity-50">
+                <span className="material-symbols-outlined text-[18px]">delete_forever</span>
+                Hapus Semua
+              </button>
+            )}
           </div>
         </div>
 
@@ -304,6 +331,33 @@ export default function Dataset() {
             <AlertDialogCancel disabled={deleting}>Batal</AlertDialogCancel>
             <AlertDialogAction onClick={handleBulkDelete} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {deleting ? "Menghapus..." : "Hapus"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={deleteAllOpen} onOpenChange={(o) => { setDeleteAllOpen(o); if (!o) setDeleteAllConfirmText(""); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus SEMUA dataset?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Anda akan menghapus <b>{total.toLocaleString()}</b> baris dari tabel tweets. Tindakan ini permanen dan tidak bisa dibatalkan. Ketik <b>HAPUS</b> di bawah untuk mengonfirmasi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <input
+            value={deleteAllConfirmText}
+            onChange={(e) => setDeleteAllConfirmText(e.target.value)}
+            placeholder="Ketik HAPUS"
+            className="w-full bg-surface-low rounded-xl px-4 py-3 text-sm outline-none border border-outline/30"
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingAll}>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAll}
+              disabled={deletingAll || deleteAllConfirmText.trim() !== "HAPUS"}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingAll ? "Menghapus..." : "Hapus Semua"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
