@@ -118,6 +118,24 @@ export default function Dataset() {
     }
   };
 
+  const handleDeleteAll = async () => {
+    setDeletingAll(true);
+    try {
+      const { error } = await supabase.from("tweets").delete().not("id", "is", null);
+      if (error) throw error;
+      toast({ title: "Semua dataset dihapus", description: `${total.toLocaleString()} baris telah dihapus.` });
+      setDeleteAllOpen(false);
+      setDeleteAllConfirmText("");
+      setSelectedIds(new Set());
+      setPage(1);
+      loadData();
+    } catch (err: any) {
+      toast({ title: "Gagal menghapus semua", description: err?.message ?? "Unknown error", variant: "destructive" });
+    } finally {
+      setDeletingAll(false);
+    }
+  };
+
   const normalizeSentiment = (v: any): Sentiment | null => {
     if (v == null) return null;
     const s = String(v).trim().toLowerCase();
