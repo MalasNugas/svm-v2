@@ -335,6 +335,33 @@ export default function Dataset() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={deleteAllOpen} onOpenChange={(o) => { setDeleteAllOpen(o); if (!o) setDeleteAllConfirmText(""); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus SEMUA dataset?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Anda akan menghapus <b>{total.toLocaleString()}</b> baris dari tabel tweets. Tindakan ini permanen dan tidak bisa dibatalkan. Ketik <b>HAPUS</b> di bawah untuk mengonfirmasi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <input
+            value={deleteAllConfirmText}
+            onChange={(e) => setDeleteAllConfirmText(e.target.value)}
+            placeholder="Ketik HAPUS"
+            className="w-full bg-surface-low rounded-xl px-4 py-3 text-sm outline-none border border-outline/30"
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingAll}>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAll}
+              disabled={deletingAll || deleteAllConfirmText.trim() !== "HAPUS"}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingAll ? "Menghapus..." : "Hapus Semua"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppShell>
   );
 }
