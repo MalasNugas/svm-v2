@@ -210,6 +210,12 @@ export default function Dataset() {
               <span className="material-symbols-outlined text-[18px]">download</span>
               Download PDF
             </button>
+            {isAdmin && (
+              <button onClick={() => { setDeleteAllConfirmText(""); setDeleteAllOpen(true); }} disabled={total === 0} className="bg-destructive text-destructive-foreground rounded-xl px-5 py-3 text-sm font-bold flex items-center gap-2 hover:opacity-90 disabled:opacity-50">
+                <span className="material-symbols-outlined text-[18px]">delete_forever</span>
+                Hapus Semua
+              </button>
+            )}
           </div>
         </div>
 
