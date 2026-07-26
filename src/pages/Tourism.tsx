@@ -310,6 +310,9 @@ const destinations: Dest[] = [
   },
 ];
 
+// Build marker: bump this string when verifying that a deploy serves the latest code.
+const BUILD_MARKER = "2026-07-26-tourism-20";
+
 const regionOrder: Region[] = [
   "Kepulauan Komodo & Flores",
   "Sumba & Sekitarnya",
@@ -335,6 +338,10 @@ export default function Tourism() {
         <p className="mt-4 text-muted-foreground max-w-2xl">
           Quantitative analysis of emotional resonance across major natural landmarks. This visual index correlates geographic data with real-time visitor sentiment metrics.
         </p>
+        <p className="mt-2 text-[11px] text-muted-foreground/70">
+          {destinations.length} destinations indexed · build {BUILD_MARKER}
+        </p>
+
 
         {filtered.length === 0 && (
           <p className="mt-10 text-muted-foreground">No destinations match "{q}".</p>
