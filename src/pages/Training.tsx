@@ -173,7 +173,7 @@ export default function Training() {
             <button onClick={handleSplit} disabled={busy !== null}
               className="bg-surface-high text-primary rounded-xl px-5 py-3 text-sm font-bold flex items-center gap-2 hover:opacity-90 disabled:opacity-50">
               <span className="material-symbols-outlined text-[18px]">call_split</span>
-              {busy === "split" ? "Splitting..." : "1. Stratified Split 80/20"}
+              {busy === "split" ? "Splitting..." : "1. Stratified Split 70/30"}
             </button>
             <button onClick={handleTrain} disabled={busy !== null || !status?.train || !status?.test}
               className="bg-surface-high text-primary rounded-xl px-5 py-3 text-sm font-bold flex items-center gap-2 hover:opacity-90 disabled:opacity-50">
