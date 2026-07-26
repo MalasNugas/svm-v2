@@ -310,6 +310,9 @@ const destinations: Dest[] = [
   },
 ];
 
+// Build marker: bump this string when verifying that a deploy serves the latest code.
+const BUILD_MARKER = "2026-07-26-tourism-20";
+
 const regionOrder: Region[] = [
   "Kepulauan Komodo & Flores",
   "Sumba & Sekitarnya",
