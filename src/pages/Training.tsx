@@ -169,7 +169,6 @@ export default function Training() {
 
         {/* Actions (Naive Bayes lama / fallback) */}
         <div className="mt-6">
-          <p className="text-xs text-muted-foreground mb-2 uppercase tracking-[0.18em] font-bold">Fallback: Naive Bayes JS (tanpa backend)</p>
           <div className="flex flex-wrap gap-3">
             <button onClick={handleSplit} disabled={busy !== null}
               className="bg-surface-high text-primary rounded-xl px-5 py-3 text-sm font-bold flex items-center gap-2 hover:opacity-90 disabled:opacity-50">
