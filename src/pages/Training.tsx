@@ -178,7 +178,7 @@ export default function Training() {
             <button onClick={handleTrain} disabled={busy !== null || !status?.train || !status?.test}
               className="bg-surface-high text-primary rounded-xl px-5 py-3 text-sm font-bold flex items-center gap-2 hover:opacity-90 disabled:opacity-50">
               <span className="material-symbols-outlined text-[18px]">model_training</span>
-              {busy === "train" ? "Training..." : "2. Train & Predict (NB)"}
+              {busy === "train" ? "Training..." : "2. Train & Predict"}
             </button>
             <button onClick={handleReset} disabled={busy !== null}
               className="bg-destructive text-destructive-foreground rounded-xl px-5 py-3 text-sm font-bold flex items-center gap-2 hover:opacity-90 disabled:opacity-50">
